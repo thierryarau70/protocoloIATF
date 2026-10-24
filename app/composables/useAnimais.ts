@@ -1,12 +1,30 @@
-import type { Animal, Lote } from '#shared/types/entidades'
+import type { Animal, Atendimento, AtendimentoAnimal, Lote } from '#shared/types/entidades'
+
+export interface PassagemPorAtendimento {
+  atendimento: Atendimento
+  linha: AtendimentoAnimal
+}
 
 export function useAnimal(id: () => string) {
   const { dados, carregando } = useConsulta(id, async (aid) => {
-    const animal = await bancoLocal.animais.get(aid)
+    const [animal, linhas] = await Promise.all([
+      bancoLocal.animais.get(aid),
+      bancoLocal.atendimentoAnimais.where('animalId').equals(aid).toArray(),
+    ])
     const lote = animal ? await bancoLocal.lotes.get(animal.loteId) : undefined
-    return { animal, lote }
-  }, { animal: undefined as Animal | undefined, lote: undefined as Lote | undefined })
-  return { animal: computed(() => dados.value.animal), lote: computed(() => dados.value.lote), carregando }
+    const atendimentos = await bancoLocal.atendimentos.bulkGet(linhas.map(l => l.atendimentoId))
+    const passagens = linhas
+      .map((linha, i) => ({ linha, atendimento: atendimentos[i] }))
+      .filter((p): p is PassagemPorAtendimento => !!p.atendimento && p.linha.situacaoDg !== 'pendente')
+      .sort((a, b) => b.atendimento.dataD0.localeCompare(a.atendimento.dataD0))
+    return { animal, lote, passagens }
+  }, { animal: undefined as Animal | undefined, lote: undefined as Lote | undefined, passagens: [] as PassagemPorAtendimento[] })
+  return {
+    animal: computed(() => dados.value.animal),
+    lote: computed(() => dados.value.lote),
+    passagens: computed(() => dados.value.passagens),
+    carregando,
+  }
 }
 
 export function salvarAnimal(dados: Omit<Animal, 'id'> & { id?: string }) {

@@ -69,6 +69,17 @@ describe('sincronização', () => {
     expect(s.atendimentoAnimais.every(l => !l.emProtocolo && l.inseminada === null)).toBe(true)
   })
 
+  it('guarda o histórico da vaca e recusa contagem negativa', async () => {
+    const vaca = { id: ids.vacaA, loteId: ids.lote, numero: '0412' }
+    const r = await aplicarOperacoes(vet, [
+      op('animal', { ...vaca, numPrenhezes: 3, numPartos: 2, numAbortos: 1, numPerdasGestacionais: 0, diasVazia: 120, motivoDescarte: 'cisto' }),
+      op('animal', { ...vaca, numPartos: -1 }),
+    ])
+    expect(r.map(x => x.ok)).toEqual([true, false])
+    const a = (await montarSnapshot(vet)).animais.find(x => x.id === ids.vacaA)
+    expect(a).toMatchObject({ numPrenhezes: 3, numPartos: 2, numAbortos: 1, numPerdasGestacionais: 0, diasVazia: 120, motivoDescarte: 'cisto' })
+  })
+
   it('cada veterinário só vê e altera o que é seu', async () => {
     const r = await aplicarOperacoes(outroVet, [
       op('propriedade', { id: ids.propriedade, nome: 'Invadida' }),

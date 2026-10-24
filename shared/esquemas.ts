@@ -3,6 +3,7 @@ import { z } from 'zod'
 const textoOpcional = z.string().trim().max(200).nullish().transform(v => v || null)
 const data = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 const dataOpcional = data.nullish().transform(v => v || null)
+const contagem = z.number().int().min(0).max(10000).nullish().transform(v => v ?? null)
 const hora = z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).nullish().transform(v => v || null)
 
 export const esquemaPropriedade = z.object({
@@ -30,6 +31,12 @@ export const esquemaAnimal = z.object({
   raca: textoOpcional,
   previsaoParto: dataOpcional,
   touroPrenhez: textoOpcional,
+  numPrenhezes: contagem,
+  numAbortos: contagem,
+  numPerdasGestacionais: contagem,
+  numPartos: contagem,
+  diasVazia: contagem,
+  motivoDescarte: z.enum(['saude_uterina', 'cisto', 'defeito_congenito']).nullish().transform(v => v ?? null),
 })
 
 export const esquemaAtendimento = z.object({

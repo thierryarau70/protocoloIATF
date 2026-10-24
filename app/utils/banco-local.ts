@@ -29,6 +29,10 @@ class BancoLocal extends Dexie {
       fila: '++seq, registroId',
       meta: 'chave',
     })
+    // Histórico da vaca: busca as linhas de atendimento pelo animal
+    this.version(2).stores({
+      atendimentoAnimais: 'id, atendimentoId, animalId, [atendimentoId+animalId]',
+    })
   }
 }
 

@@ -79,9 +79,11 @@ componentes/páginas → composables → banco do aparelho (Dexie) + fila → /a
 - **Taxa de inseminação**: o total do lote é o número de vacas cadastradas no lote.
 - Sem internet, datas D8/D10/D45, taxas e a lista da planilha aparecem depois da sincronização
   (são calculadas no servidor).
+- **Histórico da vaca** (prenhezes, partos, abortos, perdas gestacionais, dias vazia, motivo de descarte) é
+  preenchido à mão, porque inclui o que aconteceu antes do app. Fica na ficha da vaca; no cadastro rápido
+  durante o DG ele não aparece. A ficha também lista os DGs e IATFs da vaca registrados no app.
 - Editar o perfil precisa de internet. Logo é um endereço de imagem (sem upload de arquivos).
 
 ## Ainda não feito
 
-- Histórico do animal (prenhezes, abortos, partos, dias vazia, motivo de descarte).
 - Gráfico de sêmen e gráficos gerais de descarte/refugo.

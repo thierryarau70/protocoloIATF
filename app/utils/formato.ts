@@ -17,6 +17,12 @@ export function plural(n: number, singular: string, pluralForma = `${singular}s`
   return `${n} ${n === 1 ? singular : pluralForma}`
 }
 
+/** Campo numérico de contagem: vazio ou inválido vira null (não informado). */
+export function inteiroOuNulo(valor: string | number): number | null {
+  const n = Number(valor)
+  return valor === '' || !Number.isInteger(n) || n < 0 ? null : n
+}
+
 export function novoId(): string {
   return crypto.randomUUID()
 }

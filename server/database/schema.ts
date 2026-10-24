@@ -43,6 +43,13 @@ export const animal = pgTable('animal', {
   raca: text('raca'),
   previsaoParto: date('previsao_parto'),
   touroPrenhez: text('touro_prenhez'),
+  // Histórico informado pelo veterinário (inclui o que aconteceu antes do app)
+  numPrenhezes: integer('num_prenhezes'),
+  numAbortos: integer('num_abortos'),
+  numPerdasGestacionais: integer('num_perdas_gestacionais'),
+  numPartos: integer('num_partos'),
+  diasVazia: integer('dias_vazia'),
+  motivoDescarte: text('motivo_descarte', { enum: ['saude_uterina', 'cisto', 'defeito_congenito'] }),
   atualizadoEm: atualizadoEm(),
 })
 
