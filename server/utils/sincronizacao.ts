@@ -1,7 +1,7 @@
 import { and, eq, inArray, sql } from 'drizzle-orm'
 import { esquemaOperacao, esquemas } from '#shared/esquemas'
 import type { ResultadoOperacao, Snapshot } from '#shared/types/entidades'
-import { calcularDatas, calcularResultado, normalizarLinhaAnimal, previsaoPartoIatf, validarLinhaAnimal } from './regras'
+import { calcularDatas, calcularResultado, normalizarLinhaAnimal, previsaoPartoIatf, taxa, validarLinhaAnimal } from './regras'
 import { tabelas, useDb } from './db'
 
 const { propriedade, lote, animal, atendimento, atendimentoAnimal } = tabelas
@@ -153,7 +153,7 @@ export async function montarSnapshot(vetId: string): Promise<Snapshot> {
       resumo: {
         animais: animais.filter(a => doLote(a.loteId)).length,
         iatf: iatf.length,
-        taxaPrenhez: inseminadas ? Math.round((prenhas / inseminadas) * 1000) / 10 : null,
+        taxaPrenhez: taxa(prenhas, inseminadas),
       },
     }
   })

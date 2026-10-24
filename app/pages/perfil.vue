@@ -42,6 +42,15 @@ async function confirmarSaida() {
   await navigateTo('/entrar')
 }
 
+const nomeSemen = { particular: 'Particular', misto: 'Misto' } as const
+const graficoSemen = computed(() => (perfil.value?.resumo.semen ?? []).map(g => ({
+  rotulo: g.tipo ? nomeSemen[g.tipo] : 'Não informado',
+  taxa: g.taxaPrenhez,
+  detalhe: g.inseminadas
+    ? `${plural(g.prenhas, 'prenha')} de ${plural(g.inseminadas, 'inseminada')} · ${plural(g.iatf, 'IATF', 'IATFs')}`
+    : `${plural(g.iatf, 'IATF', 'IATFs')} · sem inseminação registrada`,
+})))
+
 const graficoAnos = computed(() => (perfil.value?.resumo.iatfPorAno ?? []).map(a => ({ rotulo: String(a.ano), valor: a.total })))
 </script>
 
@@ -57,6 +66,13 @@ const graficoAnos = computed(() => (perfil.value?.resumo.iatfPorAno ?? []).map(a
         <div class="cartao">
           <GraficoBarras v-if="graficoAnos.length" titulo="IATF por ano" :itens="graficoAnos" />
           <p v-else class="dica">Os protocolos IATF aparecem aqui por ano.</p>
+        </div>
+        <div class="cartao">
+          <GraficoTaxa
+            v-if="graficoSemen.length" titulo="Prenhez por sêmen" :itens="graficoSemen"
+            descricao="Taxa de prenhez no D45, pelo tipo de sêmen da propriedade."
+          />
+          <p v-else class="dica">A taxa de prenhez por tipo de sêmen aparece aqui depois do primeiro IATF.</p>
         </div>
         <p v-if="erro" class="dica">{{ erro }}</p>
       </section>

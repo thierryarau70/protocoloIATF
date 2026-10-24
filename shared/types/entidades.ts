@@ -49,13 +49,25 @@ export interface ResultadoOperacao {
 
 export type DadosPerfil = z.infer<typeof esquemaPerfil>
 
+export interface PrenhezPorSemen {
+  /** Tipo de sêmen da propriedade; null quando não foi informado */
+  tipo: 'particular' | 'misto' | null
+  iatf: number
+  inseminadas: number
+  prenhas: number
+  taxaPrenhez: number | null
+}
+
+export interface ResumoVeterinario {
+  propriedades: number
+  iatfPorAno: { ano: number, total: number }[]
+  taxaPrenhez: number | null
+  semen: PrenhezPorSemen[]
+}
+
 export interface Perfil extends DadosPerfil {
   email: string
-  resumo: {
-    propriedades: number
-    iatfPorAno: { ano: number, total: number }[]
-    taxaPrenhez: number | null
-  }
+  resumo: ResumoVeterinario
 }
 
 export interface Usuario {

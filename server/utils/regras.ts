@@ -69,7 +69,8 @@ export function validarLinhaAnimal(linha: LinhaAnimal): string | null {
   return null
 }
 
-function taxa(parte: number, total: number): number | null {
+/** Porcentagem com uma casa decimal; null quando não há base para calcular. */
+export function taxa(parte: number, total: number): number | null {
   return total > 0 ? Math.round((parte / total) * 1000) / 10 : null
 }
 
