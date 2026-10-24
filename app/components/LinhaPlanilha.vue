@@ -2,7 +2,7 @@
 import type { AtendimentoAnimal } from '#shared/types/entidades'
 import type { VacaNoAtendimento } from '~/composables/useAtendimento'
 
-const props = defineProps<{ vaca: VacaNoAtendimento }>()
+const props = defineProps<{ vaca: VacaNoAtendimento, listaSemens: string }>()
 const emit = defineEmits<{ linha: [campos: Partial<AtendimentoAnimal>] }>()
 
 const linha = computed(() => props.vaca.linha!)
@@ -17,8 +17,8 @@ function escolherInseminacao(valor: boolean | null) {
   naoInseminadaSemJustificativa.value = valor === false && !linha.value.justificativaNaoInseminada
   if (!naoInseminadaSemJustificativa.value) emit('linha', { inseminada: valor })
 }
-function justificar(e: Event) {
-  const justificativa = (e.target as HTMLInputElement).value.trim()
+function justificar(valor: string) {
+  const justificativa = valor.trim()
   if (!justificativa) return
   naoInseminadaSemJustificativa.value = false
   emit('linha', { inseminada: false, justificativaNaoInseminada: justificativa })
@@ -41,13 +41,20 @@ const opcoesInseminacao = [{ valor: true, rotulo: 'Inseminada' }, { valor: false
       <span class="rotulo">D10</span>
       <GrupoEscolha :model-value="inseminada" :opcoes="opcoesInseminacao" :rotulo="`Inseminação da vaca ${n}`" desmarcavel @update:model-value="escolherInseminacao" />
     </div>
+    <div v-if="inseminada === true" class="campo">
+      <label :for="`${id}-s`">Sêmen</label>
+      <EntradaAoSair
+        :id="`${id}-s`" class="entrada-compacta" :list="listaSemens" :valor="linha.semen ?? ''"
+        placeholder="Touro ou partida" autocomplete="off" autocapitalize="words"
+        @salvar="emit('linha', { semen: $event })" />
+    </div>
     <div v-if="inseminada === false" class="campo">
       <label :for="`${id}-j`">Justificativa (obrigatória)</label>
-      <input :id="`${id}-j`" class="entrada entrada-compacta" :value="linha.justificativaNaoInseminada ?? ''" required placeholder="Por que não foi inseminada?" @change="justificar">
+      <EntradaAoSair :id="`${id}-j`" class="entrada-compacta" :valor="linha.justificativaNaoInseminada ?? ''" required placeholder="Por que não foi inseminada?" @salvar="justificar" />
     </div>
     <div class="campo">
       <label :for="`${id}-o`">Obs.</label>
-      <input :id="`${id}-o`" class="entrada entrada-compacta" :value="linha.obs ?? ''" @change="emit('linha', { obs: ($event.target as HTMLInputElement).value })">
+      <EntradaAoSair :id="`${id}-o`" class="entrada-compacta" :valor="linha.obs ?? ''" @salvar="emit('linha', { obs: $event })" />
     </div>
   </div>
 </template>

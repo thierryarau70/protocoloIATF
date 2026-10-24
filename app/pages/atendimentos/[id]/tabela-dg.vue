@@ -5,7 +5,6 @@ const { atendimento, lote, propriedade, vacas, contagem, atualizar, atualizarVac
 
 const avaliadas = computed(() => vacas.value.filter(v => v.linha && v.linha.situacaoDg !== 'pendente'))
 const sobrelinha = computed(() => [propriedade.value?.nome, lote.value?.nome, formatarData(atendimento.value?.dataD0)].filter(Boolean).join(' · '))
-const texto = (e: Event) => (e.target as HTMLInputElement).value
 
 async function finalizar() {
   await atualizar({ status: 'finalizado' })
@@ -34,21 +33,18 @@ async function finalizar() {
               <td class="numero">{{ v.animal.numero }}</td>
               <td><span class="selo" :class="`tom-${tomSituacao[v.linha!.situacaoDg]}`">{{ rotuloSituacao[v.linha!.situacaoDg] }}</span></td>
               <td class="detalhe">
-                <input
-                  v-if="v.linha!.situacaoDg === 'prenha'" class="entrada entrada-compacta" placeholder="Idade gestacional"
-                  :aria-label="`Idade gestacional da vaca ${v.animal.numero}`" :value="v.linha!.idadeGestacional ?? ''"
-                  @change="atualizarVaca(v, { idadeGestacional: texto($event) })"
-                >
-                <input
-                  v-else-if="v.linha!.situacaoDg === 'descarte'" class="entrada entrada-compacta" placeholder="Destino"
-                  :aria-label="`Destino do descarte da vaca ${v.animal.numero}`" :value="v.linha!.destinoDescarte ?? ''"
-                  @change="atualizarVaca(v, { destinoDescarte: texto($event) })"
-                >
-                <input
-                  v-else-if="v.linha!.situacaoDg === 'refugo'" class="entrada entrada-compacta" placeholder="Motivo"
-                  :aria-label="`Motivo do refugo da vaca ${v.animal.numero}`" :value="v.linha!.motivoRefugo ?? ''"
-                  @change="atualizarVaca(v, { motivoRefugo: texto($event) })"
-                >
+                <EntradaAoSair
+                  v-if="v.linha!.situacaoDg === 'prenha'" class="entrada-compacta" placeholder="Idade gestacional"
+                  :aria-label="`Idade gestacional da vaca ${v.animal.numero}`" :valor="v.linha!.idadeGestacional ?? ''"
+                  @salvar="atualizarVaca(v, { idadeGestacional: $event })" />
+                <EntradaAoSair
+                  v-else-if="v.linha!.situacaoDg === 'descarte'" class="entrada-compacta" placeholder="Destino"
+                  :aria-label="`Destino do descarte da vaca ${v.animal.numero}`" :valor="v.linha!.destinoDescarte ?? ''"
+                  @salvar="atualizarVaca(v, { destinoDescarte: $event })" />
+                <EntradaAoSair
+                  v-else-if="v.linha!.situacaoDg === 'refugo'" class="entrada-compacta" placeholder="Motivo"
+                  :aria-label="`Motivo do refugo da vaca ${v.animal.numero}`" :valor="v.linha!.motivoRefugo ?? ''"
+                  @salvar="atualizarVaca(v, { motivoRefugo: $event })" />
                 <span v-else class="suave">—</span>
               </td>
             </tr>

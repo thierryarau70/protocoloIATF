@@ -82,8 +82,10 @@ componentes/páginas → composables → banco do aparelho (Dexie) + fila → /a
 - **Histórico da vaca** (prenhezes, partos, abortos, perdas gestacionais, dias vazia, motivo de descarte) é
   preenchido à mão, porque inclui o que aconteceu antes do app. Fica na ficha da vaca; no cadastro rápido
   durante o DG ele não aparece. A ficha também lista os DGs e IATFs da vaca registrados no app.
-- **Gráfico de sêmen** (no perfil) compara a taxa de prenhez no D45 pelo tipo de sêmen da propriedade
-  (particular × misto), porque o app não registra o sêmen de cada inseminação.
+- **Sêmen por vaca**: na planilha, a vaca inseminada ganha o campo "Sêmen" (com sugestões dos já usados).
+  O gráfico "Prenhez por sêmen" aparece no resultado do lote (depois do D45) e no perfil; mostra os 8 mais
+  usados e soma o resto em "Outros". Nomes iguais com maiúsculas diferentes contam juntos.
+- **Taxas do perfil e da propriedade** usam só IATF finalizado, porque antes do D45 a prenhez não é conhecida.
 - Editar o perfil precisa de internet. Logo é um endereço de imagem (sem upload de arquivos).
 
 ## Ainda não feito

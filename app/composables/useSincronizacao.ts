@@ -16,16 +16,21 @@ function useConsultaGlobal() {
   return effectScope(true).run(() => useConsulta(() => 0, () => bancoLocal.fila.count(), 0))!
 }
 
-/** Grava no aparelho e coloca na fila de envio, na mesma transação. */
+/**
+ * Grava no aparelho e coloca na fila de envio, na mesma transação.
+ * Os campos recebidos são mesclados com o registro atual do aparelho, então duas alterações
+ * seguidas na mesma vaca não se sobrescrevem; a fila leva o registro completo.
+ */
 async function registrar<T extends { id: string }>(entidade: Entidade, dados: T): Promise<T> {
   const tabela = tabelaDaEntidade[entidade]
+  let completo = dados
   await bancoLocal.transaction('rw', tabela, bancoLocal.fila, async () => {
-    const atual = await tabela.get(dados.id)
-    await tabela.put({ ...atual, ...dados } as never)
-    await bancoLocal.fila.add({ entidade, registroId: dados.id, dados: { ...dados } })
+    completo = { ...(await tabela.get(dados.id)), ...dados }
+    await tabela.put(completo as never)
+    await bancoLocal.fila.add({ entidade, registroId: dados.id, dados: { ...completo } })
   })
   agendar(0)
-  return dados
+  return completo
 }
 
 function agendar(atraso: number) {

@@ -15,6 +15,13 @@
       "when": 1792879307644,
       "tag": "0001_historico_animal",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792880016634,
+      "tag": "0002_semen_por_vaca",
+      "breakpoints": true
     }
   ]
 }

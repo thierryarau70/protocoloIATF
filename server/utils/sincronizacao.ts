@@ -115,6 +115,10 @@ export async function aplicarOperacoes(vetId: string, operacoes: Operacao[]): Pr
     catch (e) {
       if (e instanceof ErroOperacao) resultados.push({ id: op.id, ok: false, erro: e.message })
       else if (e instanceof Error && e.name === 'ZodError') resultados.push({ id: op.id, ok: false, erro: 'Dados inválidos.' })
+      // Violação de integridade (ex.: a mesma vaca duas vezes no atendimento): recusa só esta operação
+      else if (String((e as { code?: unknown })?.code ?? (e as { cause?: { code?: unknown } })?.cause?.code ?? '').startsWith('23')) {
+        resultados.push({ id: op.id, ok: false, erro: 'Registro em conflito com outro já salvo.' })
+      }
       else throw e
     }
   }
@@ -146,8 +150,10 @@ export async function montarSnapshot(vetId: string): Promise<Snapshot> {
   const propriedadesComResumo = propriedades.map(({ veterinarioId: _, atualizadoEm: __, ...p }) => {
     const doLote = (loteId: string) => propriedadeDoLote.get(loteId) === p.id
     const iatf = atendimentosComResultado.filter(a => doLote(a.loteId) && a.tipo === 'dg_iatf' && a.status !== 'dg')
-    const inseminadas = iatf.reduce((s, a) => s + a.resultado.inseminadas, 0)
-    const prenhas = iatf.reduce((s, a) => s + a.resultado.prenhasD45, 0)
+    // Prenhez só é conhecida depois do D45: a taxa usa os atendimentos finalizados
+    const finalizados = iatf.filter(a => a.status === 'finalizado')
+    const inseminadas = finalizados.reduce((s, a) => s + a.resultado.inseminadas, 0)
+    const prenhas = finalizados.reduce((s, a) => s + a.resultado.prenhasD45, 0)
     return {
       ...p,
       resumo: {

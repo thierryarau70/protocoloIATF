@@ -15,7 +15,6 @@ const id = useId()
 function escolher(valor: SituacaoDg | null) {
   emit('linha', { situacaoDg: valor ?? 'pendente' })
 }
-const texto = (e: Event) => (e.target as HTMLInputElement).value
 </script>
 
 <template>
@@ -28,29 +27,29 @@ const texto = (e: Event) => (e.target as HTMLInputElement).value
     <div v-if="situacao === 'prenha'" class="detalhes">
       <div class="campo">
         <label :for="`${id}-ig`">Idade gestacional</label>
-        <input :id="`${id}-ig`" class="entrada entrada-compacta" :value="vaca.linha?.idadeGestacional ?? ''" placeholder="Ex.: 60 dias" @change="emit('linha', { idadeGestacional: texto($event) })">
+        <EntradaAoSair :id="`${id}-ig`" class="entrada-compacta" :valor="vaca.linha?.idadeGestacional ?? ''" placeholder="Ex.: 60 dias" @salvar="emit('linha', { idadeGestacional: $event })" />
       </div>
       <div class="linha-campos">
         <div class="campo">
           <label :for="`${id}-pv`">Previsão de parto</label>
-          <input :id="`${id}-pv`" type="date" class="entrada entrada-compacta" :value="vaca.animal.previsaoParto ?? ''" @change="emit('animal', { previsaoParto: texto($event) || null })">
+          <EntradaAoSair :id="`${id}-pv`" type="date" class="entrada-compacta" :valor="vaca.animal.previsaoParto ?? ''" @salvar="emit('animal', { previsaoParto: $event || null })" />
         </div>
         <div class="campo">
           <label :for="`${id}-tr`">Touro da prenhez</label>
-          <input :id="`${id}-tr`" class="entrada entrada-compacta" :value="vaca.animal.touroPrenhez ?? ''" @change="emit('animal', { touroPrenhez: texto($event) })">
+          <EntradaAoSair :id="`${id}-tr`" class="entrada-compacta" :valor="vaca.animal.touroPrenhez ?? ''" @salvar="emit('animal', { touroPrenhez: $event })" />
         </div>
       </div>
     </div>
     <div v-else-if="situacao === 'descarte'" class="detalhes">
       <div class="campo">
         <label :for="`${id}-ds`">Destino do descarte</label>
-        <input :id="`${id}-ds`" class="entrada entrada-compacta" :value="vaca.linha?.destinoDescarte ?? ''" @change="emit('linha', { destinoDescarte: texto($event) })">
+        <EntradaAoSair :id="`${id}-ds`" class="entrada-compacta" :valor="vaca.linha?.destinoDescarte ?? ''" @salvar="emit('linha', { destinoDescarte: $event })" />
       </div>
     </div>
     <div v-else-if="situacao === 'refugo'" class="detalhes">
       <div class="campo">
         <label :for="`${id}-mr`">Motivo do refugo</label>
-        <input :id="`${id}-mr`" class="entrada entrada-compacta" :value="vaca.linha?.motivoRefugo ?? ''" @change="emit('linha', { motivoRefugo: texto($event) })">
+        <EntradaAoSair :id="`${id}-mr`" class="entrada-compacta" :valor="vaca.linha?.motivoRefugo ?? ''" @salvar="emit('linha', { motivoRefugo: $event })" />
       </div>
     </div>
   </div>

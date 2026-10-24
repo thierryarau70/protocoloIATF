@@ -84,6 +84,8 @@ export const atendimentoAnimal = pgTable('atendimento_animal', {
   hormonioDia: text('hormonio_dia', { enum: ['d7', 'd8', 'd9'] }),
   inseminada: boolean('inseminada'),
   justificativaNaoInseminada: text('justificativa_nao_inseminada'),
+  // Sêmen usado na inseminação (nome do touro ou partida)
+  semen: text('semen'),
   obs: text('obs'),
   resultadoD45: text('resultado_d45', { enum: ['prenha', 'vazia'] }),
   atualizadoEm: atualizadoEm(),

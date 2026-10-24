@@ -33,6 +33,8 @@ const graficoIatf = computed(() => r.value
       { rotulo: 'Vazias D45', valor: r.value.vaziasD45, tom: 'ambar' as const },
     ]
   : [])
+// Só depois de algum DG final: antes disso toda taxa seria 0%
+const graficoSemen = computed(() => (r.value && r.value.prenhasD45 + r.value.vaziasD45 > 0 ? itensGraficoSemen(r.value.semen) : []))
 const dia = { d7: 'D7', d8: 'D8', d9: 'D9' } as const
 const data = (d?: string) => (d ? formatarData(d) : 'ao sincronizar')
 </script>
@@ -100,6 +102,9 @@ const data = (d?: string) => (d ? formatarData(d) : 'ao sincronizar')
           </div>
           <div class="cartao"><GraficoBarras titulo="Resultado do DG" :itens="graficoDg" /></div>
           <div v-if="!soDg" class="cartao"><GraficoBarras titulo="IATF" :itens="graficoIatf" /></div>
+          <div v-if="!soDg && graficoSemen.length" class="cartao">
+            <GraficoTaxa titulo="Prenhez por sêmen" descricao="Taxa no D45 entre as vacas inseminadas com cada sêmen." :itens="graficoSemen" />
+          </div>
           <div v-if="!soDg && r.prenhasD45" class="cartao-suave">
             Previsão de parto das prenhas do IATF: <strong>{{ formatarData(atendimento.previsaoParto) }}</strong>
           </div>
@@ -119,7 +124,7 @@ const data = (d?: string) => (d ? formatarData(d) : 'ao sincronizar')
       <div class="tabela-rolagem">
         <table class="tabela">
           <thead>
-            <tr><th scope="col">Nº vaca</th><th scope="col">Situação</th><th scope="col">D8/7/9</th><th scope="col">D10</th><th scope="col">Obs.</th><th scope="col">D45</th></tr>
+            <tr><th scope="col">Nº vaca</th><th scope="col">Situação</th><th scope="col">D8/7/9</th><th scope="col">D10</th><th scope="col">Sêmen</th><th scope="col">Obs.</th><th scope="col">D45</th></tr>
           </thead>
           <tbody>
             <tr v-for="v in emProtocolo" :key="v.animal.id">
@@ -127,6 +132,7 @@ const data = (d?: string) => (d ? formatarData(d) : 'ao sincronizar')
               <td><span class="selo tom-ambar">Apta</span></td>
               <td>{{ v.linha?.hormonioDia ? dia[v.linha.hormonioDia] : '—' }}</td>
               <td>{{ v.linha?.inseminada === true ? 'Inseminada' : v.linha?.inseminada === false ? 'Não' : '—' }}</td>
+              <td>{{ v.linha?.semen || '—' }}</td>
               <td>{{ v.linha?.obs || v.linha?.justificativaNaoInseminada || '—' }}</td>
               <td>
                 <span v-if="v.linha?.resultadoD45" class="selo" :class="v.linha.resultadoD45 === 'prenha' ? 'tom-verde' : 'tom-ambar'">{{ rotuloSituacao[v.linha.resultadoD45] }}</span>
@@ -136,7 +142,7 @@ const data = (d?: string) => (d ? formatarData(d) : 'ao sincronizar')
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="6">
+              <td colspan="7">
                 Inseminador: {{ atendimento.inseminador || '—' }} · {{ plural(emProtocolo.length, 'animal', 'animais') }} ·
                 Perdidos: {{ atendimento.animaisPerdidos }} · Taxa de prenhez: {{ formatarTaxa(r?.taxaPrenhez) }}
               </td>

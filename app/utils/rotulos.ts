@@ -1,4 +1,4 @@
-import type { SituacaoDg } from '#shared/types/entidades'
+import type { PrenhezPorSemen, SituacaoDg } from '#shared/types/entidades'
 
 export type Tom = 'verde' | 'ambar' | 'vermelho' | 'neutro'
 
@@ -24,3 +24,11 @@ export const motivosDescarte = [
 ]
 
 export const rotuloStatus = { dg: 'Em DG', protocolo: 'Em protocolo', finalizado: 'Finalizado' } as const
+
+export function itensGraficoSemen(grupos: PrenhezPorSemen[]) {
+  return grupos.map(g => ({
+    rotulo: g.rotulo,
+    taxa: g.taxaPrenhez,
+    detalhe: `${plural(g.prenhas, 'prenha')} de ${plural(g.inseminadas, 'inseminada')}`,
+  }))
+}

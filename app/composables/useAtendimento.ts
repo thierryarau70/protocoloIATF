@@ -31,17 +31,18 @@ export function useAtendimento(id: () => string) {
 
   function atualizar(campos: Partial<Atendimento>) {
     if (!atendimento.value) return
-    return useSincronizacao().registrar('atendimento', { ...semCalculados(atendimento.value), ...campos })
+    return useSincronizacao().registrar('atendimento', { ...campos, id: atendimento.value.id })
   }
 
-  function atualizarVaca(vaca: VacaNoAtendimento, campos: Partial<AtendimentoAnimal>) {
-    const linha: AtendimentoAnimal = vaca.linha ?? {
+  async function atualizarVaca(vaca: VacaNoAtendimento, campos: Partial<AtendimentoAnimal>) {
+    // A linha pode ter sido criada há instantes e ainda não ter chegado à tela
+    const existente = vaca.linha ?? await bancoLocal.atendimentoAnimais.where('[atendimentoId+animalId]').equals([id(), vaca.animal.id]).first()
+    const base: AtendimentoAnimal = existente ? { ...existente } : {
       id: novoId(), atendimentoId: id(), animalId: vaca.animal.id, situacaoDg: 'pendente',
       idadeGestacional: null, destinoDescarte: null, motivoRefugo: null, hormonioDia: null,
-      inseminada: null, justificativaNaoInseminada: null, obs: null, resultadoD45: null,
+      inseminada: null, justificativaNaoInseminada: null, semen: null, obs: null, resultadoD45: null,
     }
-    const { emProtocolo: _, ...dados } = linha
-    return useSincronizacao().registrar('atendimentoAnimal', { ...dados, ...campos })
+    return useSincronizacao().registrar('atendimentoAnimal', existente ? { ...campos, id: base.id } : { ...base, ...campos })
   }
 
   return {
@@ -57,16 +58,25 @@ export function useAtendimento(id: () => string) {
   }
 }
 
-function semCalculados({ dataD8: _a, dataD10: _b, dataD45: _c, previsaoParto: _d, resultado: _e, ...resto }: Atendimento) {
-  return resto
-}
-
 export async function iniciarAtendimento(loteId: string, dataD0: string) {
   const atendimento: Atendimento = {
     id: novoId(), loteId, tipo: 'dg_iatf', status: 'dg', dataD0,
     gnrh: null, horaD8: null, horaD10: null, inseminador: null, animaisPerdidos: 0,
   }
   return useSincronizacao().registrar('atendimento', atendimento)
+}
+
+/** Sêmens já usados pelo veterinário, os mais usados primeiro: sugestões para digitar rápido na planilha. */
+export function useSemensUsados() {
+  const { dados } = useConsulta(() => 0, async () => {
+    const contagem = new Map<string, number>()
+    await bancoLocal.atendimentoAnimais.each((l) => {
+      const nome = l.semen?.trim()
+      if (nome) contagem.set(nome, (contagem.get(nome) ?? 0) + 1)
+    })
+    return [...contagem].sort((a, b) => b[1] - a[1]).map(([nome]) => nome)
+  }, [] as string[])
+  return dados
 }
 
 export function useAtendimentos() {

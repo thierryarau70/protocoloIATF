@@ -9,9 +9,6 @@ const soDg = computed(() => atendimento.value?.tipo === 'so_dg')
 const sobrelinha = computed(() => [propriedade.value?.nome, lote.value?.nome, formatarData(atendimento.value?.dataD0)].filter(Boolean).join(' · '))
 const tipos = [{ valor: 'dg_iatf' as const, rotulo: 'DG + IATF' }, { valor: 'so_dg' as const, rotulo: 'Só DG' }]
 
-function salvarAnimalDaVaca(vaca: (typeof vacas.value)[number], campos: Record<string, unknown>) {
-  return salvarAnimal({ ...vaca.animal, ...campos })
-}
 const novaVaca = computed(() => `/animais/nova?lote=${atendimento.value?.loteId}&atendimento=${id()}${busca.value ? `&numero=${encodeURIComponent(busca.value)}` : ''}`)
 </script>
 
@@ -53,7 +50,7 @@ const novaVaca = computed(() => `/animais/nova?lote=${atendimento.value?.loteId}
         <LinhaDg
           v-for="v in filtradas" :key="v.animal.id" :vaca="v"
           @linha="atualizarVaca(v, $event)"
-          @animal="salvarAnimalDaVaca(v, $event)"
+          @animal="atualizarAnimal(v.animal.id, $event)"
         />
       </div>
       <div v-if="busca && !filtradas.length" class="vazio">

@@ -63,6 +63,7 @@ export const esquemaAtendimentoAnimal = z.object({
   hormonioDia: z.enum(['d7', 'd8', 'd9']).nullish().transform(v => v ?? null),
   inseminada: z.boolean().nullish().transform(v => v ?? null),
   justificativaNaoInseminada: textoOpcional,
+  semen: textoOpcional,
   obs: textoOpcional,
   resultadoD45: z.enum(['prenha', 'vazia']).nullish().transform(v => v ?? null),
 })

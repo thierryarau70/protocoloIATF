@@ -42,14 +42,7 @@ async function confirmarSaida() {
   await navigateTo('/entrar')
 }
 
-const nomeSemen = { particular: 'Particular', misto: 'Misto' } as const
-const graficoSemen = computed(() => (perfil.value?.resumo.semen ?? []).map(g => ({
-  rotulo: g.tipo ? nomeSemen[g.tipo] : 'Não informado',
-  taxa: g.taxaPrenhez,
-  detalhe: g.inseminadas
-    ? `${plural(g.prenhas, 'prenha')} de ${plural(g.inseminadas, 'inseminada')} · ${plural(g.iatf, 'IATF', 'IATFs')}`
-    : `${plural(g.iatf, 'IATF', 'IATFs')} · sem inseminação registrada`,
-})))
+const graficoSemen = computed(() => itensGraficoSemen(perfil.value?.resumo.semen ?? []))
 
 const graficoAnos = computed(() => (perfil.value?.resumo.iatfPorAno ?? []).map(a => ({ rotulo: String(a.ano), valor: a.total })))
 </script>
@@ -70,9 +63,9 @@ const graficoAnos = computed(() => (perfil.value?.resumo.iatfPorAno ?? []).map(a
         <div class="cartao">
           <GraficoTaxa
             v-if="graficoSemen.length" titulo="Prenhez por sêmen" :itens="graficoSemen"
-            descricao="Taxa de prenhez no D45, pelo tipo de sêmen da propriedade."
+            descricao="Taxa no D45 entre as vacas inseminadas com cada sêmen, nos IATF finalizados."
           />
-          <p v-else class="dica">A taxa de prenhez por tipo de sêmen aparece aqui depois do primeiro IATF.</p>
+          <p v-else class="dica">A comparação por sêmen aparece aqui depois do primeiro IATF finalizado com o sêmen registrado na planilha.</p>
         </div>
         <p v-if="erro" class="dica">{{ erro }}</p>
       </section>

@@ -63,6 +63,15 @@ describe('sincronização', () => {
     expect(at.resultado).toMatchObject({ inseminadas: 1, prenhasD45: 1, taxaInseminacao: 50, taxaPrenhez: 100 })
   })
 
+  it('a mesma vaca duas vezes no atendimento é recusada sem travar a fila', async () => {
+    const r = await aplicarOperacoes(vet, [
+      linha(randomUUID(), ids.vacaA),
+      op('animal', { id: ids.vacaB, loteId: ids.lote, numero: '0423' }),
+    ])
+    expect(r[0]).toMatchObject({ ok: false, erro: expect.stringMatching(/conflito/) })
+    expect(r[1]!.ok).toBe(true)
+  })
+
   it('mudar para "Só DG" tira as vacas do protocolo', async () => {
     await aplicarOperacoes(vet, [op('atendimento', { id: ids.atendimento, loteId: ids.lote, tipo: 'so_dg', status: 'dg', dataD0: '2026-10-24' })])
     const s = await montarSnapshot(vet)

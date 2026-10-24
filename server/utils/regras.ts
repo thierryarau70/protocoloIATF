@@ -1,4 +1,4 @@
-import type { SituacaoDg } from '#shared/types/entidades'
+import type { PrenhezPorSemen, SituacaoDg } from '#shared/types/entidades'
 
 /**
  * Regras de negócio do protocolo IATF. Ficam só no servidor: o aparelho guarda e envia,
@@ -42,22 +42,24 @@ interface LinhaAnimal {
   justificativaNaoInseminada: string | null
   hormonioDia: string | null
   resultadoD45: string | null
+  semen?: string | null
 }
 
 /**
  * Calcula se a vaca está no protocolo e limpa o que não se aplica:
- * fora do protocolo não há hormônio, inseminação nem D45; D45 só para inseminada.
+ * fora do protocolo não há hormônio, inseminação nem D45; D45 e sêmen só para inseminada.
  */
 export function normalizarLinhaAnimal<T extends Omit<LinhaAnimal, 'emProtocolo'>>(tipo: TipoAtendimento, linha: T): T & { emProtocolo: boolean } {
   const emProtocolo = entraNoProtocolo(tipo, linha.situacaoDg)
   if (!emProtocolo) {
-    return { ...linha, emProtocolo, hormonioDia: null, inseminada: null, justificativaNaoInseminada: null, resultadoD45: null }
+    return { ...linha, emProtocolo, hormonioDia: null, inseminada: null, justificativaNaoInseminada: null, resultadoD45: null, semen: null }
   }
   return {
     ...linha,
     emProtocolo,
     justificativaNaoInseminada: linha.inseminada === false ? linha.justificativaNaoInseminada : null,
     resultadoD45: linha.inseminada === true ? linha.resultadoD45 : null,
+    semen: linha.inseminada === true ? linha.semen : null,
   }
 }
 
@@ -72,6 +74,44 @@ export function validarLinhaAnimal(linha: LinhaAnimal): string | null {
 /** Porcentagem com uma casa decimal; null quando não há base para calcular. */
 export function taxa(parte: number, total: number): number | null {
   return total > 0 ? Math.round((parte / total) * 1000) / 10 : null
+}
+
+/** Quantos sêmens aparecem no gráfico; os demais somam em "Outros". */
+export const MAX_SEMENS_GRAFICO = 8
+
+/**
+ * Taxa de prenhez no D45 por sêmen, entre as vacas inseminadas.
+ * O nome é comparado sem diferenciar maiúsculas e espaços nas pontas; vale a grafia mais usada.
+ */
+export function prenhezPorSemen(linhas: LinhaAnimal[]): PrenhezPorSemen[] {
+  const grupos = new Map<string, { nomes: Map<string, number>, inseminadas: number, prenhas: number }>()
+  for (const l of linhas) {
+    if (l.inseminada !== true) continue
+    const nome = l.semen?.trim() ?? ''
+    const chave = nome.toLowerCase()
+    const g = grupos.get(chave) ?? { nomes: new Map(), inseminadas: 0, prenhas: 0 }
+    g.nomes.set(nome, (g.nomes.get(nome) ?? 0) + 1)
+    g.inseminadas++
+    if (l.resultadoD45 === 'prenha') g.prenhas++
+    grupos.set(chave, g)
+  }
+
+  const linha = (rotulo: string, tipo: PrenhezPorSemen['tipo'], inseminadas: number, prenhas: number): PrenhezPorSemen =>
+    ({ rotulo, tipo, inseminadas, prenhas, taxaPrenhez: taxa(prenhas, inseminadas) })
+  const maisUsado = (nomes: Map<string, number>) => [...nomes].sort((a, b) => b[1] - a[1])[0]![0]
+  // Mais usados primeiro; empate em ordem alfabética, para o gráfico não trocar de ordem sozinho
+  const informados = [...grupos].filter(([chave]) => chave)
+    .map(([, g]) => ({ ...g, rotulo: maisUsado(g.nomes) }))
+    .sort((a, b) => b.inseminadas - a.inseminadas || a.rotulo.localeCompare(b.rotulo, 'pt-BR'))
+
+  const resultado = informados.slice(0, MAX_SEMENS_GRAFICO).map(g => linha(g.rotulo, 'semen', g.inseminadas, g.prenhas))
+  const resto = informados.slice(MAX_SEMENS_GRAFICO)
+  if (resto.length) {
+    resultado.push(linha('Outros', 'outros', resto.reduce((s, g) => s + g.inseminadas, 0), resto.reduce((s, g) => s + g.prenhas, 0)))
+  }
+  const semNome = grupos.get('')
+  if (semNome) resultado.push(linha('Não informado', 'nao_informado', semNome.inseminadas, semNome.prenhas))
+  return resultado
 }
 
 /**
@@ -98,5 +138,6 @@ export function calcularResultado(linhas: LinhaAnimal[], totalVacasLote: number)
     vaziasD45: contar(l => l.resultadoD45 === 'vazia'),
     taxaInseminacao: taxa(inseminadas, totalVacasLote),
     taxaPrenhez: taxa(prenhasD45, inseminadas),
+    semen: prenhezPorSemen(linhas),
   }
 }

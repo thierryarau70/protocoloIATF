@@ -6,7 +6,8 @@ const { atendimento, lote, propriedade, vacas, contagem, atualizar, atualizarVac
 // Quem está no protocolo é decidido pelo servidor (emProtocolo)
 const emProtocolo = computed(() => vacas.value.filter(v => v.linha?.emProtocolo))
 const aguardandoServidor = computed(() => contagem.value.vazia > 0 && vacas.value.some(v => v.linha?.situacaoDg === 'vazia' && v.linha.emProtocolo === undefined))
-const texto = (e: Event) => (e.target as HTMLInputElement).value
+const semensUsados = useSemensUsados()
+const listaSemens = useId()
 </script>
 
 <template>
@@ -20,25 +21,27 @@ const texto = (e: Event) => (e.target as HTMLInputElement).value
     <div class="pilha">
       <div class="campo">
         <label for="inseminador">Inseminador</label>
-        <input id="inseminador" class="entrada" placeholder="Nome do inseminador" :value="atendimento.inseminador ?? ''" @change="atualizar({ inseminador: texto($event) })">
+        <EntradaAoSair id="inseminador" placeholder="Nome do inseminador" :valor="atendimento.inseminador ?? ''" @salvar="atualizar({ inseminador: $event })" />
       </div>
       <p v-if="aguardandoServidor" class="cartao-suave">
         Algumas vacas vazias ainda não foram confirmadas pelo servidor. Elas entram na planilha assim que o aparelho sincronizar.
       </p>
       <div class="grade-cartoes">
-        <LinhaPlanilha v-for="v in emProtocolo" :key="v.animal.id" :vaca="v" @linha="atualizarVaca(v, $event)" />
+        <LinhaPlanilha v-for="v in emProtocolo" :key="v.animal.id" :vaca="v" :lista-semens="listaSemens" @linha="atualizarVaca(v, $event)" />
       </div>
       <div v-if="!emProtocolo.length && !aguardandoServidor" class="vazio">Nenhuma vaca no protocolo.</div>
+      <datalist :id="listaSemens">
+        <option v-for="s in semensUsados" :key="s" :value="s" />
+      </datalist>
     </div>
     <template #rodape>
       <div class="rodape">
         <span class="selo tom-verde">{{ plural(emProtocolo.length, 'animal', 'animais') }}</span>
         <label class="perdidos">
           Perdidos
-          <input
-            type="number" min="0" inputmode="numeric" class="entrada entrada-compacta" :value="atendimento.animaisPerdidos"
-            @change="atualizar({ animaisPerdidos: Math.max(0, Number(texto($event)) || 0) })"
-          >
+          <EntradaAoSair
+            type="number" min="0" inputmode="numeric" class="entrada-compacta" :valor="atendimento.animaisPerdidos"
+            @salvar="atualizar({ animaisPerdidos: Math.max(0, Number($event) || 0) })" />
         </label>
         <NuxtLink :to="`/atendimentos/${atendimento.id}`" class="btn btn-primario concluir">Concluir</NuxtLink>
       </div>

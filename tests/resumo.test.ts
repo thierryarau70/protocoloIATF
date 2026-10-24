@@ -2,38 +2,42 @@ import { describe, expect, it } from 'vitest'
 import type { Snapshot } from '#shared/types/entidades'
 import { resumirVeterinario } from '../server/utils/resumo'
 
-const atendimento = (loteId: string, status: string, inseminadas: number, prenhasD45: number, tipo = 'dg_iatf') =>
-  ({ loteId, tipo, status, dataD0: '2026-10-24', resultado: { inseminadas, prenhasD45 } })
+const atendimento = (id: string, status: string, inseminadas: number, prenhasD45: number, tipo = 'dg_iatf') =>
+  ({ id, loteId: 'l1', tipo, status, dataD0: '2026-10-24', resultado: { inseminadas, prenhasD45 } })
+const vaca = (atendimentoId: string, semen: string | null, resultadoD45: string | null) =>
+  ({ atendimentoId, situacaoDg: 'vazia', emProtocolo: true, inseminada: true, semen, resultadoD45 })
 
 const snapshot = {
-  propriedades: [
-    { id: 'p1', semenTipo: 'particular' },
-    { id: 'p2', semenTipo: 'misto' },
-    { id: 'p3', semenTipo: null },
-  ],
-  lotes: [{ id: 'l1', propriedadeId: 'p1' }, { id: 'l2', propriedadeId: 'p2' }, { id: 'l3', propriedadeId: 'p3' }],
+  propriedades: [{ id: 'p1' }],
+  lotes: [{ id: 'l1', propriedadeId: 'p1' }],
   animais: [],
-  atendimentoAnimais: [],
   atendimentos: [
-    atendimento('l1', 'finalizado', 4, 3),
-    atendimento('l1', 'protocolo', 2, 0),
-    atendimento('l2', 'finalizado', 10, 5),
-    atendimento('l2', 'dg', 9, 9), // ainda no DG: não é IATF
-    atendimento('l3', 'finalizado', 0, 0, 'so_dg'), // Só DG: não é IATF
+    atendimento('a1', 'finalizado', 4, 3),
+    atendimento('a2', 'protocolo', 1, 0),
+    atendimento('a3', 'dg', 1, 1), // ainda no DG: não é IATF
+  ],
+  atendimentoAnimais: [
+    vaca('a1', 'Nelore XP', 'prenha'),
+    vaca('a1', 'nelore xp ', 'prenha'),
+    vaca('a1', 'Angus 12', 'vazia'),
+    vaca('a1', null, 'prenha'),
+    vaca('a2', 'Angus 12', null),
+    vaca('a3', 'Nelore XP', 'prenha'),
   ],
 } as unknown as Snapshot
 
 describe('resumo do veterinário', () => {
-  it('agrupa a prenhez pelo tipo de sêmen da propriedade, em ordem fixa', () => {
+  it('compara a prenhez pelo sêmen de cada vaca, só em IATF finalizado', () => {
     expect(resumirVeterinario(snapshot).semen).toEqual([
-      { tipo: 'particular', iatf: 2, inseminadas: 6, prenhas: 3, taxaPrenhez: 50 },
-      { tipo: 'misto', iatf: 1, inseminadas: 10, prenhas: 5, taxaPrenhez: 50 },
+      { rotulo: 'Nelore XP', tipo: 'semen', inseminadas: 2, prenhas: 2, taxaPrenhez: 100 },
+      { rotulo: 'Angus 12', tipo: 'semen', inseminadas: 1, prenhas: 0, taxaPrenhez: 0 },
+      { rotulo: 'Não informado', tipo: 'nao_informado', inseminadas: 1, prenhas: 1, taxaPrenhez: 100 },
     ])
   })
 
   it('conta só IATF que passou do DG', () => {
     const r = resumirVeterinario(snapshot)
-    expect(r.iatfPorAno).toEqual([{ ano: 2026, total: 3 }])
-    expect(r.taxaPrenhez).toBe(50)
+    expect(r.iatfPorAno).toEqual([{ ano: 2026, total: 2 }])
+    expect(r.taxaPrenhez).toBe(75)
   })
 })

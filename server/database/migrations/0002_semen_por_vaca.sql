@@ -1,0 +1,1 @@
+ALTER TABLE "atendimento_animal" ADD COLUMN "semen" text;

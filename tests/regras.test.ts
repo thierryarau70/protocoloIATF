@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcularDatas, calcularResultado, entraNoProtocolo, normalizarLinhaAnimal, validarLinhaAnimal } from '../server/utils/regras'
+import { calcularDatas, calcularResultado, entraNoProtocolo, MAX_SEMENS_GRAFICO, normalizarLinhaAnimal, prenhezPorSemen, validarLinhaAnimal } from '../server/utils/regras'
 
 const linha = (p: Partial<Parameters<typeof validarLinhaAnimal>[0]> = {}) => ({
   situacaoDg: 'vazia' as const, emProtocolo: true, inseminada: null, justificativaNaoInseminada: null, hormonioDia: null, resultadoD45: null, ...p,
@@ -41,5 +41,17 @@ describe('regras IATF', () => {
     expect(r.taxaInseminacao).toBe(50)
     expect(r.taxaPrenhez).toBe(75)
     expect(r.dg.prenha).toBe(1)
+  })
+
+  it('sêmen só fica registrado em vaca inseminada', () => {
+    expect(normalizarLinhaAnimal('dg_iatf', linha({ inseminada: false, justificativaNaoInseminada: 'x', semen: 'Angus' })).semen).toBeNull()
+    expect(normalizarLinhaAnimal('dg_iatf', linha({ inseminada: true, semen: 'Angus' })).semen).toBe('Angus')
+  })
+
+  it('junta os sêmens além do limite em "Outros"', () => {
+    const linhas = Array.from({ length: MAX_SEMENS_GRAFICO + 2 }, (_, i) => linha({ inseminada: true, semen: `S${i}`, resultadoD45: 'prenha' }))
+    const r = prenhezPorSemen(linhas)
+    expect(r).toHaveLength(MAX_SEMENS_GRAFICO + 1)
+    expect(r.at(-1)).toMatchObject({ rotulo: 'Outros', tipo: 'outros', inseminadas: 2, prenhas: 2 })
   })
 })

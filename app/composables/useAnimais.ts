@@ -31,6 +31,11 @@ export function salvarAnimal(dados: Omit<Animal, 'id'> & { id?: string }) {
   return useSincronizacao().registrar('animal', { ...dados, id: dados.id ?? novoId() })
 }
 
+/** Altera só alguns campos da vaca (ex.: previsão de parto na tela do DG). */
+export function atualizarAnimal(id: string, campos: Partial<Animal>) {
+  return useSincronizacao().registrar('animal', { ...campos, id })
+}
+
 /** Número já usado por outra vaca do mesmo lote. */
 export async function numeroRepetido(loteId: string, numero: string, ignorarId?: string) {
   const animais = await bancoLocal.animais.where('loteId').equals(loteId).toArray()

@@ -9,6 +9,15 @@ export interface ResumoPropriedade {
   taxaPrenhez: number | null
 }
 
+export interface PrenhezPorSemen {
+  rotulo: string
+  /** "outros" soma os sêmens além do limite do gráfico; "nao_informado", inseminações sem sêmen */
+  tipo: 'semen' | 'outros' | 'nao_informado'
+  inseminadas: number
+  prenhas: number
+  taxaPrenhez: number | null
+}
+
 export interface ResultadoAtendimento {
   dg: Record<SituacaoDg, number>
   emProtocolo: number
@@ -18,6 +27,7 @@ export interface ResultadoAtendimento {
   vaziasD45: number
   taxaInseminacao: number | null
   taxaPrenhez: number | null
+  semen: PrenhezPorSemen[]
 }
 
 export type Propriedade = z.infer<typeof esquemaPropriedade> & { resumo?: ResumoPropriedade }
@@ -48,15 +58,6 @@ export interface ResultadoOperacao {
 }
 
 export type DadosPerfil = z.infer<typeof esquemaPerfil>
-
-export interface PrenhezPorSemen {
-  /** Tipo de sêmen da propriedade; null quando não foi informado */
-  tipo: 'particular' | 'misto' | null
-  iatf: number
-  inseminadas: number
-  prenhas: number
-  taxaPrenhez: number | null
-}
 
 export interface ResumoVeterinario {
   propriedades: number
