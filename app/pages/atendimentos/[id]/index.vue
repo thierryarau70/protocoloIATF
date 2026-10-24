@@ -35,6 +35,8 @@ const graficoIatf = computed(() => r.value
   : [])
 // Só depois de algum DG final: antes disso toda taxa seria 0%
 const graficoSemen = computed(() => (r.value && r.value.prenhasD45 + r.value.vaziasD45 > 0 ? itensGraficoSemen(r.value.semen) : []))
+const { semens } = useSemens(() => propriedade.value?.id)
+const nomeSemen = computed(() => new Map(semens.value.map(s => [s.id, s.nome])))
 const dia = { d7: 'D7', d8: 'D8', d9: 'D9' } as const
 const data = (d?: string) => (d ? formatarData(d) : 'ao sincronizar')
 </script>
@@ -132,7 +134,7 @@ const data = (d?: string) => (d ? formatarData(d) : 'ao sincronizar')
               <td><span class="selo tom-ambar">Apta</span></td>
               <td>{{ v.linha?.hormonioDia ? dia[v.linha.hormonioDia] : '—' }}</td>
               <td>{{ v.linha?.inseminada === true ? 'Inseminada' : v.linha?.inseminada === false ? 'Não' : '—' }}</td>
-              <td>{{ v.linha?.semen || '—' }}</td>
+              <td>{{ (v.linha?.semenId && nomeSemen.get(v.linha.semenId)) || '—' }}</td>
               <td>{{ v.linha?.obs || v.linha?.justificativaNaoInseminada || '—' }}</td>
               <td>
                 <span v-if="v.linha?.resultadoD45" class="selo" :class="v.linha.resultadoD45 === 'prenha' ? 'tom-verde' : 'tom-ambar'">{{ rotuloSituacao[v.linha.resultadoD45] }}</span>

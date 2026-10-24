@@ -1,5 +1,5 @@
 import type { z } from 'zod'
-import type { esquemaAnimal, esquemaAtendimento, esquemaAtendimentoAnimal, esquemaLote, esquemaPerfil, esquemaPropriedade } from '../esquemas'
+import type { esquemaAnimal, esquemaAtendimento, esquemaAtendimentoAnimal, esquemaLote, esquemaPerfil, esquemaPropriedade, esquemaSemen } from '../esquemas'
 
 export type SituacaoDg = 'pendente' | 'prenha' | 'vazia' | 'descarte' | 'refugo'
 
@@ -32,6 +32,7 @@ export interface ResultadoAtendimento {
 
 export type Propriedade = z.infer<typeof esquemaPropriedade> & { resumo?: ResumoPropriedade }
 export type Lote = z.infer<typeof esquemaLote>
+export type Semen = z.infer<typeof esquemaSemen>
 export type Animal = z.infer<typeof esquemaAnimal>
 // Campos calculados no servidor chegam pela sincronização; ausentes enquanto o registro só existe no aparelho
 export type Atendimento = z.infer<typeof esquemaAtendimento> & {
@@ -46,6 +47,7 @@ export type AtendimentoAnimal = z.infer<typeof esquemaAtendimentoAnimal> & { emP
 export interface Snapshot {
   propriedades: Propriedade[]
   lotes: Lote[]
+  semens: Semen[]
   animais: Animal[]
   atendimentos: Atendimento[]
   atendimentoAnimais: AtendimentoAnimal[]

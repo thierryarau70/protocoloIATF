@@ -74,7 +74,6 @@ componentes/páginas → composables → banco do aparelho (Dexie) + fila → /a
 
 ## Decisões a confirmar
 
-- **Sêmen** ficou como campo da propriedade (particular / misto), não como tabela separada.
 - **Previsão de parto do IATF** = D10 + 283 dias (gestação média bovina).
 - **Taxa de inseminação**: o total do lote é o número de vacas cadastradas no lote.
 - Sem internet, datas D8/D10/D45, taxas e a lista da planilha aparecem depois da sincronização
@@ -82,9 +81,12 @@ componentes/páginas → composables → banco do aparelho (Dexie) + fila → /a
 - **Histórico da vaca** (prenhezes, partos, abortos, perdas gestacionais, dias vazia, motivo de descarte) é
   preenchido à mão, porque inclui o que aconteceu antes do app. Fica na ficha da vaca; no cadastro rápido
   durante o DG ele não aparece. A ficha também lista os DGs e IATFs da vaca registrados no app.
-- **Sêmen por vaca**: na planilha, a vaca inseminada ganha o campo "Sêmen" (com sugestões dos já usados).
-  O gráfico "Prenhez por sêmen" aparece no resultado do lote (depois do D45) e no perfil; mostra os 8 mais
-  usados e soma o resto em "Outros". Nomes iguais com maiúsculas diferentes contam juntos.
+- **Cadastro de sêmen na fazenda**: na tela da propriedade, seção "Sêmen" (touro, raça, central/partida).
+  Na planilha, a vaca inseminada escolhe o sêmen entre os cadastrados na fazenda (botões até 6, lista acima
+  disso); dá para cadastrar um novo sem sair da planilha. O gráfico "Prenhez por sêmen" aparece no resultado
+  do lote (depois do D45) e no perfil, com os 8 mais usados e o resto em "Outros". No perfil, o mesmo touro
+  cadastrado em fazendas diferentes conta junto pelo nome. O tipo de sêmen (particular/misto) continua
+  sendo um campo da propriedade.
 - **Taxas do perfil e da propriedade** usam só IATF finalizado, porque antes do D45 a prenhez não é conhecida.
 - Editar o perfil precisa de internet. Logo é um endereço de imagem (sem upload de arquivos).
 

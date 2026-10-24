@@ -6,8 +6,8 @@ const { atendimento, lote, propriedade, vacas, contagem, atualizar, atualizarVac
 // Quem está no protocolo é decidido pelo servidor (emProtocolo)
 const emProtocolo = computed(() => vacas.value.filter(v => v.linha?.emProtocolo))
 const aguardandoServidor = computed(() => contagem.value.vazia > 0 && vacas.value.some(v => v.linha?.situacaoDg === 'vazia' && v.linha.emProtocolo === undefined))
-const semensUsados = useSemensUsados()
-const listaSemens = useId()
+const { semens } = useSemens(() => propriedade.value?.id)
+const cadastrarSemen = computed(() => `/propriedades/${propriedade.value?.id}/semen/novo?voltar=${encodeURIComponent(route.path)}`)
 </script>
 
 <template>
@@ -27,12 +27,10 @@ const listaSemens = useId()
         Algumas vacas vazias ainda não foram confirmadas pelo servidor. Elas entram na planilha assim que o aparelho sincronizar.
       </p>
       <div class="grade-cartoes">
-        <LinhaPlanilha v-for="v in emProtocolo" :key="v.animal.id" :vaca="v" :lista-semens="listaSemens" @linha="atualizarVaca(v, $event)" />
+        <LinhaPlanilha v-for="v in emProtocolo" :key="v.animal.id" :vaca="v" :semens="semens" :cadastrar-semen="cadastrarSemen" @linha="atualizarVaca(v, $event)" />
       </div>
       <div v-if="!emProtocolo.length && !aguardandoServidor" class="vazio">Nenhuma vaca no protocolo.</div>
-      <datalist :id="listaSemens">
-        <option v-for="s in semensUsados" :key="s" :value="s" />
-      </datalist>
+      <NuxtLink v-if="semens.length" :to="cadastrarSemen" class="btn btn-tracejado btn-bloco">+ Cadastrar outro sêmen</NuxtLink>
     </div>
     <template #rodape>
       <div class="rodape">

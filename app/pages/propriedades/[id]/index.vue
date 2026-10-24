@@ -4,6 +4,7 @@ const id = () => String(route.params.id)
 const { propriedade, lotes, carregando } = usePropriedade(id)
 const totalAnimais = computed(() => lotes.value.reduce((s, l) => s + l.totalAnimais, 0))
 const semen = { particular: 'Particular', misto: 'Misto' } as const
+const { semens } = useSemens(id)
 </script>
 
 <template>
@@ -25,8 +26,26 @@ const semen = { particular: 'Particular', misto: 'Misto' } as const
             <div><dt>Proprietário</dt><dd>{{ propriedade.proprietario || '—' }}</dd></div>
             <div><dt>Local</dt><dd>{{ propriedade.local || '—' }}</dd></div>
             <div><dt>Inscrição</dt><dd>{{ propriedade.inscricao || '—' }}</dd></div>
-            <div><dt>Sêmen</dt><dd>{{ propriedade.semenTipo ? semen[propriedade.semenTipo] : '—' }}</dd></div>
+            <div><dt>Tipo de sêmen</dt><dd>{{ propriedade.semenTipo ? semen[propriedade.semenTipo] : '—' }}</dd></div>
           </dl>
+        </section>
+
+        <section class="pilha-curta">
+          <h2 class="titulo-secao">Sêmen</h2>
+          <div v-if="semens.length" class="lista-semen">
+            <NuxtLink v-for="s in semens" :key="s.id" :to="`/propriedades/${propriedade.id}/semen/${s.id}`" class="item-semen">
+              <span class="corpo">
+                <span class="nome">{{ s.nome }}</span>
+                <span v-if="detalheSemen(s)" class="suave">{{ detalheSemen(s) }}</span>
+              </span>
+              <Icone nome="avancar" />
+            </NuxtLink>
+          </div>
+          <p v-else class="dica">Nenhum sêmen cadastrado. Cadastre para escolher na planilha IATF.</p>
+          <NuxtLink :to="`/propriedades/${propriedade.id}/semen/novo`" class="btn btn-tracejado btn-bloco">
+            <Icone nome="mais" />
+            Cadastrar sêmen
+          </NuxtLink>
         </section>
 
         <section class="pilha-curta">
@@ -69,6 +88,12 @@ dd { margin: 0; font-size: 15px; font-weight: 700; text-align: right; }
 .resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .resumo-item { padding: 6px; }
 .colunas { display: flex; flex-direction: column; gap: 24px; }
+.lista-semen { display: flex; flex-direction: column; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-grande); overflow: hidden; }
+.item-semen { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 16px; border-bottom: 1px solid var(--borda-suave); color: var(--texto-suave); }
+.item-semen:last-child { border-bottom: 0; }
+.item-semen:hover { background: var(--superficie-2); }
+.item-semen .corpo { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.item-semen .nome { font-size: 16px; font-weight: 700; color: var(--texto); }
 
 @media (min-width: 1024px) {
   .colunas { display: grid; grid-template-columns: 1fr 1fr; align-items: start; }

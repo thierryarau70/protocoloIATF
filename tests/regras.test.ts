@@ -44,8 +44,8 @@ describe('regras IATF', () => {
   })
 
   it('sêmen só fica registrado em vaca inseminada', () => {
-    expect(normalizarLinhaAnimal('dg_iatf', linha({ inseminada: false, justificativaNaoInseminada: 'x', semen: 'Angus' })).semen).toBeNull()
-    expect(normalizarLinhaAnimal('dg_iatf', linha({ inseminada: true, semen: 'Angus' })).semen).toBe('Angus')
+    expect(normalizarLinhaAnimal('dg_iatf', linha({ inseminada: false, justificativaNaoInseminada: 'x', semenId: 's1' })).semenId).toBeNull()
+    expect(normalizarLinhaAnimal('dg_iatf', linha({ inseminada: true, semenId: 's1' })).semenId).toBe('s1')
   })
 
   it('junta os sêmens além do limite em "Outros"', () => {

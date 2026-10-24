@@ -37,9 +37,9 @@ async function salvar() {
         <input id="inscricao" v-model="form.inscricao" class="entrada">
       </div>
       <div class="campo">
-        <span class="rotulo">Sêmen</span>
+        <span class="rotulo">Tipo de sêmen</span>
         <GrupoEscolha
-          v-model="form.semenTipo" rotulo="Sêmen" desmarcavel
+          v-model="form.semenTipo" rotulo="Tipo de sêmen" desmarcavel
           :opcoes="[{ valor: 'particular', rotulo: 'Particular' }, { valor: 'misto', rotulo: 'Misto' }]"
         />
       </div>

@@ -42,6 +42,8 @@ interface LinhaAnimal {
   justificativaNaoInseminada: string | null
   hormonioDia: string | null
   resultadoD45: string | null
+  semenId?: string | null
+  /** Nome do sêmen, resolvido a partir do cadastro da fazenda (usado só no gráfico) */
   semen?: string | null
 }
 
@@ -52,14 +54,14 @@ interface LinhaAnimal {
 export function normalizarLinhaAnimal<T extends Omit<LinhaAnimal, 'emProtocolo'>>(tipo: TipoAtendimento, linha: T): T & { emProtocolo: boolean } {
   const emProtocolo = entraNoProtocolo(tipo, linha.situacaoDg)
   if (!emProtocolo) {
-    return { ...linha, emProtocolo, hormonioDia: null, inseminada: null, justificativaNaoInseminada: null, resultadoD45: null, semen: null }
+    return { ...linha, emProtocolo, hormonioDia: null, inseminada: null, justificativaNaoInseminada: null, resultadoD45: null, semenId: null }
   }
   return {
     ...linha,
     emProtocolo,
     justificativaNaoInseminada: linha.inseminada === false ? linha.justificativaNaoInseminada : null,
     resultadoD45: linha.inseminada === true ? linha.resultadoD45 : null,
-    semen: linha.inseminada === true ? linha.semen : null,
+    semenId: linha.inseminada === true ? (linha.semenId ?? null) : null,
   }
 }
 
@@ -81,6 +83,7 @@ export const MAX_SEMENS_GRAFICO = 8
 
 /**
  * Taxa de prenhez no D45 por sêmen, entre as vacas inseminadas.
+ * Agrupa pelo nome: o mesmo touro cadastrado em duas fazendas conta junto no perfil.
  * O nome é comparado sem diferenciar maiúsculas e espaços nas pontas; vale a grafia mais usada.
  */
 export function prenhezPorSemen(linhas: LinhaAnimal[]): PrenhezPorSemen[] {

@@ -58,6 +58,7 @@ async function baixarDados(): Promise<void> {
   const tabelas: Record<keyof Snapshot, Table<{ id: string }, string>> = {
     propriedades: bancoLocal.propriedades,
     lotes: bancoLocal.lotes,
+    semens: bancoLocal.semens,
     animais: bancoLocal.animais,
     atendimentos: bancoLocal.atendimentos,
     atendimentoAnimais: bancoLocal.atendimentoAnimais,

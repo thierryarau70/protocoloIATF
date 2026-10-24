@@ -34,6 +34,16 @@ export const lote = pgTable('lote', {
   atualizadoEm: atualizadoEm(),
 })
 
+// Sêmen cadastrado na fazenda; a planilha escolhe daqui o sêmen de cada vaca inseminada
+export const semen = pgTable('semen', {
+  id: uuid('id').primaryKey(),
+  propriedadeId: uuid('propriedade_id').notNull().references(() => propriedade.id, { onDelete: 'cascade' }),
+  nome: text('nome').notNull(),
+  raca: text('raca'),
+  partida: text('partida'),
+  atualizadoEm: atualizadoEm(),
+})
+
 export const animal = pgTable('animal', {
   id: uuid('id').primaryKey(),
   loteId: uuid('lote_id').notNull().references(() => lote.id, { onDelete: 'cascade' }),
@@ -84,8 +94,7 @@ export const atendimentoAnimal = pgTable('atendimento_animal', {
   hormonioDia: text('hormonio_dia', { enum: ['d7', 'd8', 'd9'] }),
   inseminada: boolean('inseminada'),
   justificativaNaoInseminada: text('justificativa_nao_inseminada'),
-  // Sêmen usado na inseminação (nome do touro ou partida)
-  semen: text('semen'),
+  semenId: uuid('semen_id').references(() => semen.id, { onDelete: 'set null' }),
   obs: text('obs'),
   resultadoD45: text('resultado_d45', { enum: ['prenha', 'vazia'] }),
   atualizadoEm: atualizadoEm(),

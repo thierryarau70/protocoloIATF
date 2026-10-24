@@ -22,6 +22,14 @@ export const esquemaLote = z.object({
   localPrincipal: textoOpcional,
 })
 
+export const esquemaSemen = z.object({
+  id: z.uuid(),
+  propriedadeId: z.uuid(),
+  nome: z.string().trim().min(1).max(120),
+  raca: textoOpcional,
+  partida: textoOpcional,
+})
+
 export const esquemaAnimal = z.object({
   id: z.uuid(),
   loteId: z.uuid(),
@@ -63,7 +71,7 @@ export const esquemaAtendimentoAnimal = z.object({
   hormonioDia: z.enum(['d7', 'd8', 'd9']).nullish().transform(v => v ?? null),
   inseminada: z.boolean().nullish().transform(v => v ?? null),
   justificativaNaoInseminada: textoOpcional,
-  semen: textoOpcional,
+  semenId: z.uuid().nullish().transform(v => v ?? null),
   obs: textoOpcional,
   resultadoD45: z.enum(['prenha', 'vazia']).nullish().transform(v => v ?? null),
 })
@@ -71,6 +79,7 @@ export const esquemaAtendimentoAnimal = z.object({
 export const esquemas = {
   propriedade: esquemaPropriedade,
   lote: esquemaLote,
+  semen: esquemaSemen,
   animal: esquemaAnimal,
   atendimento: esquemaAtendimento,
   atendimentoAnimal: esquemaAtendimentoAnimal,
@@ -80,7 +89,7 @@ export type Entidade = keyof typeof esquemas
 
 export const esquemaOperacao = z.object({
   id: z.string().min(1).max(64),
-  entidade: z.enum(['propriedade', 'lote', 'animal', 'atendimento', 'atendimentoAnimal']),
+  entidade: z.enum(['propriedade', 'lote', 'semen', 'animal', 'atendimento', 'atendimentoAnimal']),
   dados: z.record(z.string(), z.unknown()),
 })
 

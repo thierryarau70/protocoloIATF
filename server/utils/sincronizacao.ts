@@ -2,14 +2,21 @@ import { and, eq, inArray, sql } from 'drizzle-orm'
 import { esquemaOperacao, esquemas } from '#shared/esquemas'
 import type { ResultadoOperacao, Snapshot } from '#shared/types/entidades'
 import { calcularDatas, calcularResultado, normalizarLinhaAnimal, previsaoPartoIatf, taxa, validarLinhaAnimal } from './regras'
+import { nomearSemen } from './resumo'
 import { tabelas, useDb } from './db'
 
-const { propriedade, lote, animal, atendimento, atendimentoAnimal } = tabelas
+const { propriedade, lote, semen, animal, atendimento, atendimentoAnimal } = tabelas
 
 type Db = Awaited<ReturnType<typeof useDb>>
 type Operacao = ReturnType<typeof esquemaOperacao.parse>
 
 class ErroOperacao extends Error {}
+
+async function propriedadePermitida(db: Db, vetId: string, propriedadeId: string) {
+  const [dono] = await db.select({ id: propriedade.id }).from(propriedade)
+    .where(and(eq(propriedade.id, propriedadeId), eq(propriedade.veterinarioId, vetId)))
+  if (!dono) throw new ErroOperacao('Propriedade não encontrada.')
+}
 
 async function lotePermitido(db: Db, vetId: string, loteId: string) {
   const [linha] = await db.select({ id: lote.id }).from(lote)
@@ -44,12 +51,18 @@ async function salvarLote(db: Db, vetId: string, dados: unknown) {
   const l = esquemas.lote.parse(dados)
   const [existente] = await db.select({ propriedadeId: lote.propriedadeId }).from(lote).where(eq(lote.id, l.id))
   for (const propriedadeId of new Set([existente?.propriedadeId, l.propriedadeId])) {
-    if (!propriedadeId) continue
-    const [dono] = await db.select({ id: propriedade.id }).from(propriedade)
-      .where(and(eq(propriedade.id, propriedadeId), eq(propriedade.veterinarioId, vetId)))
-    if (!dono) throw new ErroOperacao('Propriedade não encontrada.')
+    if (propriedadeId) await propriedadePermitida(db, vetId, propriedadeId)
   }
   await db.insert(lote).values(l).onConflictDoUpdate({ target: lote.id, set: { ...l, atualizadoEm: agora } })
+}
+
+async function salvarSemen(db: Db, vetId: string, dados: unknown) {
+  const s = esquemas.semen.parse(dados)
+  const [existente] = await db.select({ propriedadeId: semen.propriedadeId }).from(semen).where(eq(semen.id, s.id))
+  for (const propriedadeId of new Set([existente?.propriedadeId, s.propriedadeId])) {
+    if (propriedadeId) await propriedadePermitida(db, vetId, propriedadeId)
+  }
+  await db.insert(semen).values(s).onConflictDoUpdate({ target: semen.id, set: { ...s, atualizadoEm: agora } })
 }
 
 async function salvarAnimal(db: Db, vetId: string, dados: unknown) {
@@ -88,6 +101,11 @@ async function salvarAtendimentoAnimal(db: Db, vetId: string, dados: unknown) {
   const linha = normalizarLinhaAnimal(at.tipo, aa)
   const erro = validarLinhaAnimal(linha)
   if (erro) throw new ErroOperacao(erro)
+  if (linha.semenId) {
+    const [doLote] = await db.select({ propriedadeId: lote.propriedadeId }).from(lote).where(eq(lote.id, at.loteId))
+    const [s] = await db.select({ propriedadeId: semen.propriedadeId }).from(semen).where(eq(semen.id, linha.semenId))
+    if (!s || s.propriedadeId !== doLote?.propriedadeId) throw new ErroOperacao('Sêmen não está cadastrado nesta fazenda.')
+  }
   await db.insert(atendimentoAnimal).values(linha)
     .onConflictDoUpdate({ target: atendimentoAnimal.id, set: { ...linha, atualizadoEm: agora } })
 }
@@ -95,6 +113,7 @@ async function salvarAtendimentoAnimal(db: Db, vetId: string, dados: unknown) {
 const salvar = {
   propriedade: salvarPropriedade,
   lote: salvarLote,
+  semen: salvarSemen,
   animal: salvarAnimal,
   atendimento: salvarAtendimento,
   atendimentoAnimal: salvarAtendimentoAnimal,
@@ -132,6 +151,9 @@ export async function montarSnapshot(vetId: string): Promise<Snapshot> {
   const lotes = propriedades.length
     ? await db.select().from(lote).where(inArray(lote.propriedadeId, propriedades.map(p => p.id)))
     : []
+  const semens = propriedades.length
+    ? await db.select().from(semen).where(inArray(semen.propriedadeId, propriedades.map(p => p.id)))
+    : []
   const loteIds = lotes.map(l => l.id)
   const animais = loteIds.length ? await db.select().from(animal).where(inArray(animal.loteId, loteIds)) : []
   const atendimentos = loteIds.length ? await db.select().from(atendimento).where(inArray(atendimento.loteId, loteIds)) : []
@@ -140,10 +162,11 @@ export async function montarSnapshot(vetId: string): Promise<Snapshot> {
     : []
 
   const vacasPorLote = contarPor(animais, a => a.loteId)
+  const comNomeDoSemen = nomearSemen(semens)
   const atendimentosComResultado = atendimentos.map(at => ({
     ...at,
     previsaoParto: previsaoPartoIatf(at.dataD10),
-    resultado: calcularResultado(atendimentoAnimais.filter(l => l.atendimentoId === at.id), vacasPorLote.get(at.loteId) ?? 0),
+    resultado: calcularResultado(atendimentoAnimais.filter(l => l.atendimentoId === at.id).map(comNomeDoSemen), vacasPorLote.get(at.loteId) ?? 0),
   }))
 
   const propriedadeDoLote = new Map(lotes.map(l => [l.id, l.propriedadeId]))
@@ -167,6 +190,7 @@ export async function montarSnapshot(vetId: string): Promise<Snapshot> {
   return {
     propriedades: propriedadesComResumo,
     lotes: lotes.map(semCarimbo),
+    semens: semens.map(semCarimbo),
     animais: animais.map(semCarimbo),
     atendimentos: atendimentosComResultado.map(semCarimbo),
     atendimentoAnimais: atendimentoAnimais.map(semCarimbo),

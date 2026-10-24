@@ -4,12 +4,14 @@ import { resumirVeterinario } from '../server/utils/resumo'
 
 const atendimento = (id: string, status: string, inseminadas: number, prenhasD45: number, tipo = 'dg_iatf') =>
   ({ id, loteId: 'l1', tipo, status, dataD0: '2026-10-24', resultado: { inseminadas, prenhasD45 } })
-const vaca = (atendimentoId: string, semen: string | null, resultadoD45: string | null) =>
-  ({ atendimentoId, situacaoDg: 'vazia', emProtocolo: true, inseminada: true, semen, resultadoD45 })
+const vaca = (atendimentoId: string, semenId: string | null, resultadoD45: string | null) =>
+  ({ atendimentoId, situacaoDg: 'vazia', emProtocolo: true, inseminada: true, semenId, resultadoD45 })
 
 const snapshot = {
   propriedades: [{ id: 'p1' }],
   lotes: [{ id: 'l1', propriedadeId: 'p1' }],
+  // O mesmo touro cadastrado em duas fazendas (com grafia diferente) conta junto
+  semens: [{ id: 's1', nome: 'Nelore XP' }, { id: 's2', nome: 'nelore xp ' }, { id: 's3', nome: 'Angus 12' }],
   animais: [],
   atendimentos: [
     atendimento('a1', 'finalizado', 4, 3),
@@ -17,12 +19,12 @@ const snapshot = {
     atendimento('a3', 'dg', 1, 1), // ainda no DG: não é IATF
   ],
   atendimentoAnimais: [
-    vaca('a1', 'Nelore XP', 'prenha'),
-    vaca('a1', 'nelore xp ', 'prenha'),
-    vaca('a1', 'Angus 12', 'vazia'),
+    vaca('a1', 's1', 'prenha'),
+    vaca('a1', 's2', 'prenha'),
+    vaca('a1', 's3', 'vazia'),
     vaca('a1', null, 'prenha'),
-    vaca('a2', 'Angus 12', null),
-    vaca('a3', 'Nelore XP', 'prenha'),
+    vaca('a2', 's3', null),
+    vaca('a3', 's1', 'prenha'),
   ],
 } as unknown as Snapshot
 

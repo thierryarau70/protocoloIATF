@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { AtendimentoAnimal } from '#shared/types/entidades'
+import type { AtendimentoAnimal, Semen } from '#shared/types/entidades'
 import type { VacaNoAtendimento } from '~/composables/useAtendimento'
 
-const props = defineProps<{ vaca: VacaNoAtendimento, listaSemens: string }>()
+const props = defineProps<{ vaca: VacaNoAtendimento, semens: Semen[], cadastrarSemen: string }>()
 const emit = defineEmits<{ linha: [campos: Partial<AtendimentoAnimal>] }>()
 
 const linha = computed(() => props.vaca.linha!)
@@ -24,6 +24,9 @@ function justificar(valor: string) {
   emit('linha', { inseminada: false, justificativaNaoInseminada: justificativa })
 }
 const dias = [{ valor: 'd7' as const, rotulo: 'D7' }, { valor: 'd8' as const, rotulo: 'D8' }, { valor: 'd9' as const, rotulo: 'D9' }]
+// Poucos sêmens: botões grandes para tocar; muitos: lista de seleção
+const MAX_BOTOES_SEMEN = 6
+const opcoesSemen = computed(() => props.semens.map(s => ({ valor: s.id, rotulo: s.nome })))
 const opcoesInseminacao = [{ valor: true, rotulo: 'Inseminada' }, { valor: false, rotulo: 'Não inseminada', tom: 'vermelho' as const }]
 </script>
 
@@ -42,11 +45,19 @@ const opcoesInseminacao = [{ valor: true, rotulo: 'Inseminada' }, { valor: false
       <GrupoEscolha :model-value="inseminada" :opcoes="opcoesInseminacao" :rotulo="`Inseminação da vaca ${n}`" desmarcavel @update:model-value="escolherInseminacao" />
     </div>
     <div v-if="inseminada === true" class="campo">
-      <label :for="`${id}-s`">Sêmen</label>
-      <EntradaAoSair
-        :id="`${id}-s`" class="entrada-compacta" :list="listaSemens" :valor="linha.semen ?? ''"
-        placeholder="Touro ou partida" autocomplete="off" autocapitalize="words"
-        @salvar="emit('linha', { semen: $event })" />
+      <span class="rotulo" :id="`${id}-s`">Sêmen</span>
+      <GrupoEscolha
+        v-if="semens.length && semens.length <= MAX_BOTOES_SEMEN" :model-value="linha.semenId" :opcoes="opcoesSemen"
+        :rotulo="`Sêmen da vaca ${n}`" desmarcavel @update:model-value="emit('linha', { semenId: $event })"
+      />
+      <select
+        v-else-if="semens.length" class="entrada entrada-compacta" :aria-labelledby="`${id}-s`" :value="linha.semenId ?? ''"
+        @change="emit('linha', { semenId: ($event.target as HTMLSelectElement).value || null })"
+      >
+        <option value="">Não informado</option>
+        <option v-for="s in semens" :key="s.id" :value="s.id">{{ s.nome }}</option>
+      </select>
+      <NuxtLink v-else :to="cadastrarSemen" class="btn btn-tracejado">+ Cadastrar sêmen da fazenda</NuxtLink>
     </div>
     <div v-if="inseminada === false" class="campo">
       <label :for="`${id}-j`">Justificativa (obrigatória)</label>

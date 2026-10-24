@@ -1,6 +1,6 @@
 import Dexie, { type Table } from 'dexie'
 import type { Entidade } from '#shared/esquemas'
-import type { Animal, Atendimento, AtendimentoAnimal, Lote, Propriedade } from '#shared/types/entidades'
+import type { Animal, Atendimento, AtendimentoAnimal, Lote, Propriedade, Semen } from '#shared/types/entidades'
 
 export interface ItemFila {
   seq?: number
@@ -12,6 +12,7 @@ export interface ItemFila {
 class BancoLocal extends Dexie {
   propriedades!: Table<Propriedade, string>
   lotes!: Table<Lote, string>
+  semens!: Table<Semen, string>
   animais!: Table<Animal, string>
   atendimentos!: Table<Atendimento, string>
   atendimentoAnimais!: Table<AtendimentoAnimal, string>
@@ -33,6 +34,7 @@ class BancoLocal extends Dexie {
     this.version(2).stores({
       atendimentoAnimais: 'id, atendimentoId, animalId, [atendimentoId+animalId]',
     })
+    this.version(3).stores({ semens: 'id, propriedadeId' })
   }
 }
 
@@ -41,9 +43,10 @@ export const bancoLocal = new BancoLocal()
 export const tabelaDaEntidade = {
   propriedade: bancoLocal.propriedades,
   lote: bancoLocal.lotes,
+  semen: bancoLocal.semens,
   animal: bancoLocal.animais,
   atendimento: bancoLocal.atendimentos,
   atendimentoAnimal: bancoLocal.atendimentoAnimais,
 } as const satisfies Record<Entidade, Table<{ id: string }, string>>
 
-export const tabelasDeDados = [bancoLocal.propriedades, bancoLocal.lotes, bancoLocal.animais, bancoLocal.atendimentos, bancoLocal.atendimentoAnimais]
+export const tabelasDeDados = [bancoLocal.propriedades, bancoLocal.lotes, bancoLocal.semens, bancoLocal.animais, bancoLocal.atendimentos, bancoLocal.atendimentoAnimais]

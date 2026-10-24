@@ -1,5 +1,5 @@
 {
-  "id": "44e0035b-2e77-4899-88aa-526872469999",
+  "id": "7e4200e6-84e7-4b01-bc0b-b330a03bffbc",
   "prevId": "35036d90-d125-4c29-a43b-bbe04c01f302",
   "version": "7",
   "dialect": "postgresql",
@@ -308,9 +308,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "semen": {
-          "name": "semen",
-          "type": "text",
+        "semen_id": {
+          "name": "semen_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -360,6 +360,19 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "atendimento_animal_semen_id_semen_id_fk": {
+          "name": "atendimento_animal_semen_id_semen_id_fk",
+          "tableFrom": "atendimento_animal",
+          "tableTo": "semen",
+          "columnsFrom": [
+            "semen_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -498,6 +511,70 @@
           "tableTo": "veterinario",
           "columnsFrom": [
             "veterinario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.semen": {
+      "name": "semen",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "propriedade_id": {
+          "name": "propriedade_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "raca": {
+          "name": "raca",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "partida": {
+          "name": "partida",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "semen_propriedade_id_propriedade_id_fk": {
+          "name": "semen_propriedade_id_propriedade_id_fk",
+          "tableFrom": "semen",
+          "tableTo": "propriedade",
+          "columnsFrom": [
+            "propriedade_id"
           ],
           "columnsTo": [
             "id"

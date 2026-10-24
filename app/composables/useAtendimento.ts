@@ -40,7 +40,7 @@ export function useAtendimento(id: () => string) {
     const base: AtendimentoAnimal = existente ? { ...existente } : {
       id: novoId(), atendimentoId: id(), animalId: vaca.animal.id, situacaoDg: 'pendente',
       idadeGestacional: null, destinoDescarte: null, motivoRefugo: null, hormonioDia: null,
-      inseminada: null, justificativaNaoInseminada: null, semen: null, obs: null, resultadoD45: null,
+      inseminada: null, justificativaNaoInseminada: null, semenId: null, obs: null, resultadoD45: null,
     }
     return useSincronizacao().registrar('atendimentoAnimal', existente ? { ...campos, id: base.id } : { ...base, ...campos })
   }
@@ -64,19 +64,6 @@ export async function iniciarAtendimento(loteId: string, dataD0: string) {
     gnrh: null, horaD8: null, horaD10: null, inseminador: null, animaisPerdidos: 0,
   }
   return useSincronizacao().registrar('atendimento', atendimento)
-}
-
-/** Sêmens já usados pelo veterinário, os mais usados primeiro: sugestões para digitar rápido na planilha. */
-export function useSemensUsados() {
-  const { dados } = useConsulta(() => 0, async () => {
-    const contagem = new Map<string, number>()
-    await bancoLocal.atendimentoAnimais.each((l) => {
-      const nome = l.semen?.trim()
-      if (nome) contagem.set(nome, (contagem.get(nome) ?? 0) + 1)
-    })
-    return [...contagem].sort((a, b) => b[1] - a[1]).map(([nome]) => nome)
-  }, [] as string[])
-  return dados
 }
 
 export function useAtendimentos() {

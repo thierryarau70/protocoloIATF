@@ -89,6 +89,28 @@ describe('sincronização', () => {
     expect(a).toMatchObject({ numPrenhezes: 3, numPartos: 2, numAbortos: 1, numPerdasGestacionais: 0, diasVazia: 120, motivoDescarte: 'cisto' })
   })
 
+  it('cadastra sêmen na fazenda e usa na vaca inseminada', async () => {
+    const semenId = randomUUID()
+    const outraFazenda = randomUUID()
+    const semenDeFora = randomUUID()
+    await aplicarOperacoes(vet, [op('atendimento', { id: ids.atendimento, loteId: ids.lote, tipo: 'dg_iatf', status: 'protocolo', dataD0: '2026-10-24' })])
+    const r = await aplicarOperacoes(vet, [
+      op('semen', { id: semenId, propriedadeId: ids.propriedade, nome: 'Nelore XP', raca: 'Nelore', partida: 'ABS 123' }),
+      op('propriedade', { id: outraFazenda, nome: 'Outra' }),
+      op('semen', { id: semenDeFora, propriedadeId: outraFazenda, nome: 'Angus' }),
+      linha(ids.linhaA, ids.vacaA, { inseminada: true, semenId }),
+      linha(ids.linhaA, ids.vacaA, { inseminada: true, semenId: semenDeFora }),
+    ])
+    expect(r.map(x => x.ok)).toEqual([true, true, true, true, false])
+    expect(r[4]!.erro).toMatch(/nesta fazenda/)
+    const s = await montarSnapshot(vet)
+    expect(s.semens.map(x => x.nome).sort()).toEqual(['Angus', 'Nelore XP'])
+    expect(s.atendimentoAnimais.find(l => l.id === ids.linhaA)?.semenId).toBe(semenId)
+    // Outro veterinário não cadastra sêmen em fazenda alheia
+    const [negado] = await aplicarOperacoes(outroVet, [op('semen', { id: randomUUID(), propriedadeId: ids.propriedade, nome: 'X' })])
+    expect(negado!.ok).toBe(false)
+  })
+
   it('cada veterinário só vê e altera o que é seu', async () => {
     const r = await aplicarOperacoes(outroVet, [
       op('propriedade', { id: ids.propriedade, nome: 'Invadida' }),
@@ -96,6 +118,6 @@ describe('sincronização', () => {
     ])
     expect(r.every(x => !x.ok)).toBe(true)
     expect((await montarSnapshot(outroVet)).propriedades).toHaveLength(0)
-    expect((await montarSnapshot(vet)).propriedades[0]!.nome).toBe('Santa Luzia')
+    expect((await montarSnapshot(vet)).propriedades.find(p => p.id === ids.propriedade)?.nome).toBe('Santa Luzia')
   })
 })

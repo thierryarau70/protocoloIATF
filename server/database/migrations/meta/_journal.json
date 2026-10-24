@@ -19,8 +19,8 @@
     {
       "idx": 2,
       "version": "7",
-      "when": 1792880016634,
-      "tag": "0002_semen_por_vaca",
+      "when": 1792880808261,
+      "tag": "0002_cadastro_semen",
       "breakpoints": true
     }
   ]
