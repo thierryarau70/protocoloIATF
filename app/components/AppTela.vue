@@ -8,29 +8,35 @@ const props = withDefaults(defineProps<{
 
 /**
  * "Voltar" leva à tela de onde a pessoa veio, como o voltar do celular: um lote aberto pela lista
- * de Lotes volta para Lotes, e não para a fazenda. O destino fixo (voltar.to) vale quando a tela foi
- * aberta direto por um link, ou quando a anterior é ela mesma (formulário que salvou e substituiu
- * a entrada do histórico).
+ * de Lotes volta para Lotes, e não para a fazenda. Vem do histórico do navegador ou, se o app
+ * recarregou a página, da anotação de origem (utils/origem-tela.ts). O destino fixo (voltar.to)
+ * vale quando a tela foi aberta direto por um link, ou quando a anterior é ela mesma (formulário
+ * que salvou e substituiu a entrada do histórico).
  */
-const route = useRoute()
 const router = useRouter()
 const anterior = ref<string | null>(null)
+const noHistorico = ref(false)
 onMounted(() => {
+  // Rota atual do roteador: a da página (useRoute) ainda aponta para a tela anterior durante a transição
+  const aqui = router.currentRoute.value.fullPath
   const back = (window.history.state as { back?: unknown } | null)?.back
-  anterior.value = typeof back === 'string' && back !== route.fullPath ? back : null
-})
+  noHistorico.value = typeof back === 'string' && back !== aqui
+  const origem = noHistorico.value ? back as string : lerOrigem(aqui)
+  anterior.value = origem && origem !== aqui ? origem : null})
 const caminho = (url: string) => url.split(/[?#]/)[0]
 const rotulo = computed(() => {
   if (!props.voltar) return ''
-  return !anterior.value || caminho(anterior.value) === caminho(props.voltar.to) ? props.voltar.rotulo : 'Voltar'
+  if (!anterior.value || caminho(anterior.value) === caminho(props.voltar.to)) return props.voltar.rotulo
+  return nomeDaTela(anterior.value)
 })
 
 function aoVoltar(e: MouseEvent) {
   // Ctrl/Cmd+clique abre em outra aba: deixa o link normal
   if (e.metaKey || e.ctrlKey || e.shiftKey) return
   e.preventDefault()
-  if (anterior.value) router.back()
-  else if (props.voltar) navigateTo(props.voltar.to)
+  if (noHistorico.value) router.back()
+  // Substitui esta tela no histórico: senão o "Voltar" da tela de destino traria a pessoa de volta aqui
+  else navigateTo(anterior.value ?? props.voltar?.to, { replace: true })
 }
 </script>
 

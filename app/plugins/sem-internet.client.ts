@@ -32,7 +32,11 @@ export default defineNuxtPlugin((nuxtApp) => {
   })
   window.addEventListener('online', precarregar)
 
-  const recarregar = (caminho: string) => reloadNuxtApp({ path: caminho, persistState: true })
+  // A página nova não herda o histórico: anota de onde veio, para o "Voltar" continuar certo
+  const recarregar = (caminho: string) => {
+    guardarOrigem(caminho, router.currentRoute.value.fullPath)
+    reloadNuxtApp({ path: caminho, persistState: true })
+  }
   const semInternet = 'Esta tela ainda não foi baixada para usar sem internet. Abra o app com internet uma vez e tente de novo.'
 
   /** A conexão responde mesmo? navigator.onLine diz "online" com sinal fraco ou sem dados. */
