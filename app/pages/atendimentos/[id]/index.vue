@@ -39,6 +39,7 @@ const { semens } = useSemens(() => propriedade.value?.id)
 const nomeSemen = computed(() => new Map(semens.value.map(s => [s.id, s.nome])))
 const dia = { d7: 'D7', d8: 'D8', d9: 'D9' } as const
 const data = (d?: string) => (d ? formatarData(d) : 'ao sincronizar')
+const { baixarPlanilha } = useRelatorio(id)
 </script>
 
 <template>
@@ -118,6 +119,14 @@ const data = (d?: string) => (d ? formatarData(d) : 'ao sincronizar')
           </div>
         </template>
         <p v-else class="cartao-suave">O resultado aparece depois que o aparelho sincronizar com o servidor.</p>
+        <div class="cartao pilha-curta">
+          <h3 class="titulo-secao">Para o fazendeiro</h3>
+          <p class="dica">Relatório com o resultado e a tabela das vacas. Funciona sem internet.</p>
+          <div class="exportar">
+            <NuxtLink :to="`/atendimentos/${atendimento.id}/relatorio`" class="btn btn-contorno">Relatório em PDF</NuxtLink>
+            <button type="button" class="btn btn-contorno" @click="baixarPlanilha">Planilha (Excel)</button>
+          </div>
+        </div>
       </section>
     </div>
 
@@ -177,6 +186,8 @@ const data = (d?: string) => (d ? formatarData(d) : 'ao sincronizar')
 .estatisticas :deep(.estatistica) { padding: 12px; }
 .justificativa { font-size: 14px; }
 .tabela-secao { margin-top: 24px; }
+.exportar { display: flex; gap: 8px; flex-wrap: wrap; }
+.exportar .btn { flex: 1; min-width: 150px; }
 
 @media (min-width: 1024px) {
   .colunas { display: grid; grid-template-columns: 1fr 1fr; align-items: start; }
