@@ -27,10 +27,18 @@ npm test          # regras de negócio e sincronização (PGlite em memória)
 npm run typecheck
 ```
 
-## Deploy (Vercel + Neon)
+## Deploy (Vercel)
 
-1. Crie o banco no Neon e copie a connection string.
-2. Na Vercel, importe o repositório e defina as variáveis `DATABASE_URL` e `NUXT_SESSION_PASSWORD` (32+ caracteres).
+| Ambiente na Vercel | Banco (`DATABASE_URL`) |
+|---|---|
+| Production (`main`) | Supabase, projeto `protocolo-iatf` (São Paulo), pelo **Shared Pooler** (IPv4, porta 6543) |
+| Preview (outras branches e PRs) | Neon, banco `protocolo_iatf_preview`, vazio e só para testes |
+
+Cada ambiente tem sua própria `NUXT_SESSION_PASSWORD`. Preview nunca aponta para o banco de produção:
+as migrações rodam no build, então um PR de teste mexeria nos dados reais.
+
+1. Na Vercel, defina `DATABASE_URL` e `NUXT_SESSION_PASSWORD` (32+ caracteres) para Production e, com outros valores, para Preview.
+2. No Supabase use o Shared Pooler: o pooler dedicado (`db.<ref>.supabase.co`) é só IPv6 e a Vercel não alcança.
 3. O script `vercel-build` roda os testes, aplica as migrações (`server/database/migrar.mjs`, que mostra o erro se falhar) e depois faz o build: com teste falhando, nada é publicado.
 4. O GitHub Actions (`.github/workflows/ci.yml`) roda tipos, testes e build em cada push e pull request.
 
