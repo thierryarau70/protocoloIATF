@@ -92,6 +92,7 @@ function rolarAteAtivo() {
         @keydown.esc="confirmar"
       >
       <Icone nome="avancar" class="seta" :class="{ aberta: aberto }" :tamanho="18" />
+      <Transition name="lista">
       <ul v-show="aberto" :id="`${id}-lista`" ref="lista" role="listbox" class="lista" :aria-label="rotulo">
         <li
           v-for="(opcao, i) in filtradas"
@@ -108,6 +109,7 @@ function rolarAteAtivo() {
         </li>
         <li v-if="!filtradas.length" class="nada" role="presentation">{{ semResultado }}</li>
       </ul>
+      </Transition>
     </div>
   </div>
 </template>
@@ -115,7 +117,7 @@ function rolarAteAtivo() {
 <style scoped>
 .envoltorio { position: relative; }
 .lupa { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--texto-suave); pointer-events: none; }
-.seta { position: absolute; right: 14px; top: 50%; transform: translateY(-50%) rotate(90deg); color: var(--texto-suave); pointer-events: none; transition: transform .15s; }
+.seta { position: absolute; right: 14px; top: 50%; transform: translateY(-50%) rotate(90deg); color: var(--texto-suave); pointer-events: none; transition: transform var(--medio) var(--curva); }
 .seta.aberta { transform: translateY(-50%) rotate(-90deg); }
 .entrada { padding-left: 42px; padding-right: 40px; }
 .lista {
@@ -128,7 +130,13 @@ function rolarAteAtivo() {
   min-height: 44px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
   border-radius: 8px; font-size: 15px; cursor: pointer;
 }
+.lista li { transition: background-color 100ms; }
 .lista li.ativa { background: var(--superficie-2); }
+/* A lista desce do campo, como um menu que se abre */
+.lista { transform-origin: top center; }
+.lista-enter-active { transition: opacity var(--rapido), transform var(--medio) var(--curva); }
+.lista-leave-active { transition: opacity 100ms, transform 100ms ease-in; }
+.lista-enter-from, .lista-leave-to { opacity: 0; transform: translateY(-6px) scaleY(.96); }
 .lista li.escolhida { color: var(--primaria); font-weight: 700; }
 .lista li.nada { color: var(--texto-suave); cursor: default; }
 </style>

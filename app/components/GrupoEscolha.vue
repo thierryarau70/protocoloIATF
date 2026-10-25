@@ -11,7 +11,11 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ 'update:modelValue': [valor: V | null] }>()
 
+// Só a opção tocada agora anima; as que já vêm marcadas ao abrir a tela ficam quietas
+const tocada = ref<V | null>(null)
+
 function escolher(valor: V) {
+  tocada.value = valor
   emit('update:modelValue', props.desmarcavel && props.modelValue === valor ? null : valor)
 }
 </script>
@@ -23,7 +27,7 @@ function escolher(valor: V) {
       :key="String(o.valor)"
       type="button"
       class="opcao"
-      :class="[`tom-${o.tom ?? 'verde'}`, { compacto, ativa: modelValue === o.valor }]"
+      :class="[`tom-${o.tom ?? 'verde'}`, { compacto, ativa: modelValue === o.valor, pulo: modelValue === o.valor && tocada === o.valor }]"
       :aria-pressed="modelValue === o.valor"
       @click="escolher(o.valor)"
     >
@@ -37,7 +41,11 @@ function escolher(valor: V) {
 .opcao {
   min-height: 44px; padding: 0 14px; border-radius: 10px; border: 2px solid var(--borda); background: var(--superficie);
   color: var(--texto); font-size: 14px; font-weight: 500;
+  transition: border-color var(--rapido), transform var(--rapido) var(--curva);
 }
+.opcao:active { transform: scale(.95); }
+/* Ao marcar, a opção dá um pulo curto: confirma o toque sem olhar duas vezes */
+.pulo { animation: marcar var(--medio) var(--curva); }
 .compacto { padding: 0 9px; font-size: 13px; }
 .opcao:not(.ativa) { background: var(--superficie); color: var(--texto); }
 .ativa { font-weight: 700; }

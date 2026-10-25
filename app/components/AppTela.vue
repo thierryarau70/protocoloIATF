@@ -18,7 +18,7 @@ withDefaults(defineProps<{
         <div class="titulos-linha">
           <div class="titulos">
             <div v-if="sobrelinha" class="sobrelinha">{{ sobrelinha }}</div>
-            <h1 class="titulo-tela">{{ titulo }}</h1>
+            <h1 class="titulo-tela mascara"><span class="revela">{{ titulo }}</span></h1>
             <slot name="subtitulo" />
           </div>
           <slot name="acao" />
@@ -48,6 +48,10 @@ withDefaults(defineProps<{
 .topo-conteudo { display: flex; flex-direction: column; gap: 8px; }
 .titulos-linha { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
 .titulos { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+/* O título sobe de dentro de uma máscara ao abrir a tela */
+.mascara { overflow: hidden; padding-bottom: .08em; margin-bottom: -.08em; }
+.revela { display: block; animation: revelar-texto 480ms var(--curva) 60ms backwards; }
+.sobrelinha { animation: surgir var(--medio) var(--curva) backwards; }
 .voltar { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; align-self: flex-start; font-size: 14px; font-weight: 500; color: var(--primaria); margin-left: -4px; padding-right: 8px; }
 .tela-corpo { flex: 1; padding: 20px 0 28px; }
 .tela-rodape {

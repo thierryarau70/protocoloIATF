@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     '~/assets/css/main.css',
   ],
   app: {
+    pageTransition: { name: 'pagina', mode: 'out-in' },
     head: {
       htmlAttrs: { lang: 'pt-BR' },
       title: 'Protocolo IATF',

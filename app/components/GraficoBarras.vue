@@ -9,10 +9,10 @@ const maximo = computed(() => Math.max(1, ...props.itens.map(i => i.valor)))
   <figure class="grafico">
     <figcaption class="titulo-secao">{{ titulo }}</figcaption>
     <dl class="barras">
-      <div v-for="i in itens" :key="i.rotulo" class="barra-linha">
+      <div v-for="(i, n) in itens" :key="i.rotulo" class="barra-linha">
         <dt>{{ i.rotulo }}</dt>
         <dd>
-          <span class="barra" :class="`barra-${i.tom ?? 'verde'}`" :style="{ width: `${(i.valor / maximo) * 100}%` }" />
+          <span class="barra" :class="`barra-${i.tom ?? 'verde'}`" :style="{ width: `${(i.valor / maximo) * 100}%`, animationDelay: `${n * 70}ms` }" />
           <span class="numero">{{ i.valor }}</span>
         </dd>
       </div>
@@ -26,7 +26,7 @@ const maximo = computed(() => Math.max(1, ...props.itens.map(i => i.valor)))
 .barra-linha { display: grid; grid-template-columns: 110px 1fr; align-items: center; gap: 10px; font-size: 14px; }
 dt { color: var(--texto-2); font-weight: 500; }
 dd { margin: 0; display: flex; align-items: center; gap: 8px; }
-.barra { height: 14px; min-width: 2px; border-radius: 4px; }
+.barra { height: 14px; min-width: 2px; border-radius: 4px; transform-origin: left; animation: crescer 700ms var(--curva) backwards; transition: width var(--medio) var(--curva); }
 .barra-verde { background: var(--primaria); }
 .barra-ambar { background: var(--ambar-borda); }
 .barra-vermelho { background: var(--vermelho-borda); }

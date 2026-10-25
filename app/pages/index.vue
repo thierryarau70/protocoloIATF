@@ -26,7 +26,7 @@ function link(a: { id: string, status: string }) {
 
     <div class="pilha">
       <div class="atalhos">
-        <NuxtLink v-for="a in atalhos" :key="a.to" :to="a.to" class="atalho" :class="{ destaque: 'destaque' in a }">
+        <NuxtLink v-for="a in atalhos" :key="a.to" :to="a.to" class="atalho cascata" :class="{ destaque: 'destaque' in a }">
           <span class="atalho-icone"><Icone :nome="a.icone" :tamanho="24" /></span>
           <span class="atalho-titulo">{{ a.titulo }}</span>
           <span class="atalho-texto">{{ a.texto }}</span>
@@ -49,8 +49,11 @@ function link(a: { id: string, status: string }) {
 .perfil-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 14px; font-weight: 500; color: var(--primaria); }
 .atalhos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .atalho { display: flex; flex-direction: column; gap: 6px; min-height: 132px; padding: 16px; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-grande); }
-.atalho:hover { border-color: var(--primaria); }
-.atalho-icone { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--primaria-suave); color: var(--primaria); margin-bottom: 4px; }
+.atalho { transition: border-color var(--rapido), box-shadow var(--rapido), transform var(--rapido) var(--curva); }
+.atalho:hover { border-color: var(--primaria); box-shadow: 0 8px 22px rgb(27 42 34 / .1); transform: translateY(-2px); }
+.atalho:active { transform: scale(.98); }
+.atalho-icone { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--primaria-suave); color: var(--primaria); margin-bottom: 4px; transition: transform var(--medio) var(--curva); }
+.atalho:hover .atalho-icone { transform: scale(1.08) rotate(-4deg); }
 .atalho-titulo { font-size: 18px; font-weight: 700; }
 .atalho-texto { font-size: 13px; color: var(--texto-suave); line-height: 1.35; }
 .destaque { background: var(--primaria); border-color: var(--primaria); color: #FFFFFF; }

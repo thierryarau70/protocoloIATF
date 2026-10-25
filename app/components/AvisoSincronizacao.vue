@@ -16,6 +16,7 @@ onBeforeUnmount(() => clearTimeout(temporizador))
 
 <template>
   <div aria-live="polite">
+    <Transition name="faixa">
     <div v-if="rejeitados.length" class="faixa faixa-erro">
       <Icone nome="alerta" :tamanho="18" />
       <div class="texto">
@@ -26,6 +27,8 @@ onBeforeUnmount(() => clearTimeout(temporizador))
         <Icone nome="fechar" :tamanho="18" />
       </button>
     </div>
+    </Transition>
+    <Transition name="faixa" mode="out-in">
     <div v-if="!online" class="faixa faixa-offline">
       <Icone nome="sem-rede" :tamanho="18" />
       <div class="texto">
@@ -41,6 +44,7 @@ onBeforeUnmount(() => clearTimeout(temporizador))
       <Icone nome="check" :tamanho="18" />
       <div class="texto">Tudo sincronizado</div>
     </div>
+    </Transition>
   </div>
 </template>
 
@@ -51,5 +55,16 @@ onBeforeUnmount(() => clearTimeout(temporizador))
 .faixa-enviando { background: var(--neutro-suave); color: var(--texto-2); }
 .faixa-ok { background: var(--primaria-suave); color: var(--primaria); }
 .faixa-erro { background: var(--vermelho-suave); color: var(--vermelho); }
+/* A faixa abre e fecha empurrando a tela com suavidade, em vez de pular */
+.faixa-enter-active, .faixa-leave-active {
+  overflow: hidden;
+  transition: max-height var(--medio) var(--curva), padding var(--medio) var(--curva), opacity var(--medio);
+}
+.faixa-enter-from, .faixa-leave-to { max-height: 0; padding-top: 0; padding-bottom: 0; opacity: 0; }
+.faixa-enter-to, .faixa-leave-from { max-height: 120px; }
+/* O "check" se desenha quando termina de sincronizar */
+.faixa-ok :deep(path) { stroke-dasharray: 22; stroke-dashoffset: 22; animation: tracar 420ms var(--curva) 120ms forwards; }
+.faixa-enviando :deep(.icone) { animation: flutuar 1.6s ease-in-out infinite; }
+@keyframes flutuar { 50% { transform: translateY(-2px); } }
 .fechar { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 0; background: none; color: inherit; margin: -10px -12px -10px 0; }
 </style>

@@ -18,13 +18,13 @@ defineProps<{
       <span v-if="descricao" class="dica">{{ descricao }}</span>
     </figcaption>
     <ul class="itens">
-      <li v-for="i in itens" :key="i.rotulo" class="item">
+      <li v-for="(i, n) in itens" :key="i.rotulo" class="item">
         <div class="linha">
           <span class="nome">{{ i.rotulo }}</span>
           <span class="valor">{{ formatarTaxa(i.taxa) }}</span>
         </div>
         <div class="trilho" aria-hidden="true">
-          <span class="barra" :style="{ width: `${i.taxa ?? 0}%` }" />
+          <span class="barra" :style="{ width: `${i.taxa ?? 0}%`, animationDelay: `${n * 70}ms` }" />
         </div>
         <span class="suave">{{ i.detalhe }}</span>
       </li>
@@ -42,5 +42,5 @@ defineProps<{
 .valor { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
 /* O trilho mostra a escala inteira (0 a 100%), então barras de grupos diferentes se comparam direto */
 .trilho { height: 12px; border-radius: 4px; background: var(--neutro-suave); overflow: hidden; }
-.barra { display: block; height: 100%; border-radius: 4px; background: var(--primaria); }
+.barra { display: block; height: 100%; border-radius: 4px; background: var(--primaria); transform-origin: left; animation: crescer 700ms var(--curva) backwards; transition: width var(--medio) var(--curva); }
 </style>

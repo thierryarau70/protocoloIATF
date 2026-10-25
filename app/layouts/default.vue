@@ -13,6 +13,22 @@ const links = [
 
 const route = useRoute()
 const ativo = (to: string) => (to === '/' ? route.path === '/' : route.path.startsWith(to))
+
+// Indicador que desliza até o link ativo (só aparece na barra lateral do desktop)
+const menu = ref<HTMLElement>()
+const indicador = ref<{ top: number, height: number } | null>(null)
+function posicionar() {
+  const link = menu.value?.querySelector<HTMLElement>('.link.ativo')
+  indicador.value = link?.offsetHeight ? { top: link.offsetTop, height: link.offsetHeight } : null
+}
+watch(() => route.path, () => nextTick(posicionar))
+let observador: ResizeObserver | undefined
+onMounted(() => {
+  posicionar()
+  observador = new ResizeObserver(posicionar)
+  if (menu.value) observador.observe(menu.value)
+})
+onBeforeUnmount(() => observador?.disconnect())
 </script>
 
 <template>
@@ -22,7 +38,13 @@ const ativo = (to: string) => (to === '/' ? route.path === '/' : route.path.star
         <img src="/icon.svg" alt="" width="36" height="36">
         <span>Protocolo IATF</span>
       </NuxtLink>
-      <ul>
+      <ul ref="menu">
+        <li
+          v-if="indicador"
+          class="indicador"
+          aria-hidden="true"
+          :style="{ transform: `translateY(${indicador.top}px)`, height: `${indicador.height}px` }"
+        />
         <li v-for="l in links" :key="l.to">
           <NuxtLink :to="l.to" class="link" :class="{ ativo: ativo(l.to) }" :aria-current="ativo(l.to) ? 'page' : undefined">
             <Icone :nome="l.icone" />
@@ -56,10 +78,19 @@ const ativo = (to: string) => (to === '/' ? route.path === '/' : route.path.star
     padding: 24px 16px; background: var(--superficie); border-right: 1px solid var(--borda);
   }
   .marca { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; padding: 0 8px; }
-  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-  .link { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 500; color: var(--texto-2); }
-  .link:hover { background: var(--superficie-2); }
-  .ativo { background: var(--primaria-suave); color: var(--primaria); font-weight: 700; }
+  ul { position: relative; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .indicador {
+    position: absolute; top: 0; left: 0; right: 0; border-radius: 10px; background: var(--primaria-suave);
+    transition: transform var(--medio) var(--curva), height var(--medio) var(--curva);
+  }
+  .link {
+    position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px;
+    font-size: 15px; font-weight: 500; color: var(--texto-2); transition: background-color var(--rapido), color var(--rapido);
+  }
+  .link:hover:not(.ativo) { background: var(--superficie-2); }
+  .ativo { color: var(--primaria); font-weight: 700; }
+  .link :deep(.icone) { transition: transform var(--medio) var(--curva); }
+  .link:hover :deep(.icone) { transform: translateX(2px); }
   .rodape-lateral { margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding: 0 8px; }
   .estado { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--primaria); }
   .estado.offline { color: var(--ambar); }

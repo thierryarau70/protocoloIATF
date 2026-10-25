@@ -27,6 +27,10 @@
   --toque: 48px;
   --lateral: 20px;
   --fonte: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Movimento: curto e com saída suave, para não atrasar o trabalho em campo */
+  --curva: cubic-bezier(.22, 1, .36, 1);
+  --rapido: 160ms;
+  --medio: 280ms;
   color-scheme: light;
 }
 
@@ -66,7 +70,9 @@ button { cursor: pointer; }
   min-height: var(--toque); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   border-radius: var(--raio); border: 2px solid transparent; font-size: 15px; font-weight: 700; text-align: center;
   background: var(--superficie); color: var(--primaria);
+  transition: background-color var(--rapido), border-color var(--rapido), transform var(--rapido) var(--curva);
 }
+.btn:active:not(:disabled) { transform: scale(.97); }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
 .btn-primario { background: var(--primaria); color: #FFFFFF; }
 .btn-primario:hover:not(:disabled) { background: var(--primaria-escura); }
@@ -81,6 +87,7 @@ button { cursor: pointer; }
 .entrada {
   width: 100%; height: var(--toque); padding: 0 14px; border: 1px solid var(--borda-campo); border-radius: var(--raio);
   background: var(--superficie); font-size: 16px; color: var(--texto);
+  transition: border-color var(--rapido), outline-color var(--rapido);
 }
 .entrada:focus { border-color: var(--primaria); outline: 2px solid var(--primaria-suave); }
 .entrada-compacta { height: 44px; border-radius: 10px; font-size: 15px; padding: 0 10px; }
@@ -113,6 +120,36 @@ button { cursor: pointer; }
 
 .vazio { text-align: center; padding: 32px 16px; color: var(--texto-suave); display: flex; flex-direction: column; gap: 12px; align-items: center; }
 .erro { color: var(--vermelho); font-size: 14px; font-weight: 500; }
+
+/* Movimento */
+/* Troca de tela: a nova sobe um pouco enquanto aparece */
+.pagina-enter-active { transition: opacity var(--medio) var(--curva), transform var(--medio) var(--curva); }
+.pagina-leave-active { transition: opacity 100ms ease-in; }
+.pagina-enter-from { opacity: 0; transform: translateY(10px); }
+.pagina-leave-to { opacity: 0; }
+
+@keyframes surgir { from { opacity: 0; transform: translateY(8px); } }
+@keyframes revelar-texto { from { transform: translateY(105%); } }
+@keyframes crescer { from { transform: scaleX(0); } }
+@keyframes marcar { 40% { transform: scale(1.05); } }
+@keyframes tracar { to { stroke-dashoffset: 0; } }
+
+/* Itens de lista e cartões entram em cascata (até o 8º; os demais juntos) */
+.cascata { animation: surgir var(--medio) var(--curva) backwards; }
+.cascata:nth-child(2) { animation-delay: 30ms; }
+.cascata:nth-child(3) { animation-delay: 60ms; }
+.cascata:nth-child(4) { animation-delay: 90ms; }
+.cascata:nth-child(5) { animation-delay: 120ms; }
+.cascata:nth-child(6) { animation-delay: 150ms; }
+.cascata:nth-child(7) { animation-delay: 180ms; }
+.cascata:nth-child(n+8) { animation-delay: 210ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important; transition-delay: 0ms !important;
+  }
+}
 
 @media (min-width: 720px) {
   :root { --lateral: 32px; }
