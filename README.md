@@ -31,7 +31,8 @@ npm run typecheck
 
 1. Crie o banco no Neon e copie a connection string.
 2. Na Vercel, importe o repositório e defina as variáveis `DATABASE_URL` e `NUXT_SESSION_PASSWORD` (32+ caracteres).
-3. O script `vercel-build` aplica as migrações (`drizzle-kit migrate`) e depois faz o build.
+3. O script `vercel-build` roda os testes, aplica as migrações (`drizzle-kit migrate`) e depois faz o build: com teste falhando, nada é publicado.
+4. O GitHub Actions (`.github/workflows/ci.yml`) roda tipos, testes e build em cada push e pull request.
 
 Migrações novas: altere `server/database/schema.ts` e rode `npm run db:generate`.
 

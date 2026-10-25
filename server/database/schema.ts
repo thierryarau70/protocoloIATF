@@ -1,4 +1,4 @@
-import { boolean, date, integer, numeric, pgTable, text, time, timestamp, unique, uuid } from 'drizzle-orm/pg-core'
+import { boolean, date, index, integer, numeric, pgTable, text, time, timestamp, unique, uuid } from 'drizzle-orm/pg-core'
 
 const atualizadoEm = () => timestamp('atualizado_em', { withTimezone: true }).notNull().defaultNow()
 
@@ -99,3 +99,10 @@ export const atendimentoAnimal = pgTable('atendimento_animal', {
   resultadoD45: text('resultado_d45', { enum: ['prenha', 'vazia'] }),
   atualizadoEm: atualizadoEm(),
 }, t => [unique().on(t.atendimentoId, t.animalId)])
+
+// Tentativas de login e cadastro, para limitar força bruta (ex.: "login:email:ana@x.com", "cadastro:ip:1.2.3.4")
+export const tentativaAcesso = pgTable('tentativa_acesso', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  chave: text('chave').notNull(),
+  criadoEm: timestamp('criado_em', { withTimezone: true }).notNull().defaultNow(),
+}, t => [index('tentativa_acesso_chave_criado_em_idx').on(t.chave, t.criadoEm)])
