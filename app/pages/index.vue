@@ -8,7 +8,10 @@ const atalhos = [
   { to: '/iatf', titulo: 'IATF', texto: 'Protocolos em andamento e resultados', icone: 'iatf' },
   { to: '/propriedades', titulo: 'Propriedades', texto: 'Fazendas, sêmen e resumo', icone: 'fazenda' },
   { to: '/lotes', titulo: 'Lotes', texto: 'Lotes e vacas, com busca', icone: 'lote' },
+  { to: '/touros', titulo: 'Touros', texto: 'Ranking de prenhez por touro', icone: 'ranking' },
+  { to: '/estoque', titulo: 'Estoque', texto: 'Hormônios, implantes e sêmen', icone: 'estoque' },
 ] as const
+const estoqueBaixo = useEstoqueBaixo()
 
 function link(a: { id: string, status: string }) {
   return a.status === 'dg' ? `/atendimentos/${a.id}/dg` : `/atendimentos/${a.id}`
@@ -27,6 +30,13 @@ function link(a: { id: string, status: string }) {
     <div class="pilha">
       <CartaoInstalar dispensavel />
       <AgendaManejos />
+      <NuxtLink v-if="estoqueBaixo.length" to="/estoque" class="cartao aviso-estoque">
+        <Icone nome="alerta" />
+        <span>
+          <strong>Estoque baixo: {{ plural(estoqueBaixo.length, 'item', 'itens') }}</strong>
+          <span class="suave">{{ estoqueBaixo.slice(0, 3).map(i => `${i.nome} (${i.situacao.restante.toLocaleString('pt-BR')} ${i.unidade})`).join(' · ') }}</span>
+        </span>
+      </NuxtLink>
       <div class="atalhos">
         <NuxtLink v-for="a in atalhos" :key="a.to" :to="a.to" class="atalho cascata" :class="{ destaque: 'destaque' in a }">
           <span class="atalho-icone"><Icone :nome="a.icone" :tamanho="24" /></span>
@@ -63,9 +73,12 @@ function link(a: { id: string, status: string }) {
 .destaque .atalho-texto { color: #DCEBE2; }
 
 @media (min-width: 720px) {
-  .atalhos { grid-template-columns: repeat(4, 1fr); }
+  .atalhos { grid-template-columns: repeat(3, 1fr); }
 }
 @media (min-width: 1024px) {
   .perfil-link { display: none; }
 }
+.aviso-estoque { display: flex; align-items: center; gap: 12px; border-color: var(--ambar-borda); background: var(--ambar-suave); color: var(--ambar-texto); }
+.aviso-estoque > span { display: flex; flex-direction: column; gap: 2px; }
+.aviso-estoque .suave { color: var(--ambar-texto); }
 </style>

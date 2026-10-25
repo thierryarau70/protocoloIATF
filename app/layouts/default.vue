@@ -8,6 +8,8 @@ const links = [
   { to: '/lotes', rotulo: 'Lotes', icone: 'lote' },
   { to: '/dg', rotulo: 'Novo DG', icone: 'dg' },
   { to: '/iatf', rotulo: 'IATF', icone: 'iatf' },
+  { to: '/touros', rotulo: 'Touros', icone: 'ranking' },
+  { to: '/estoque', rotulo: 'Estoque', icone: 'estoque' },
   { to: '/perfil', rotulo: 'Perfil', icone: 'perfil' },
 ] as const
 

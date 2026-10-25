@@ -5,7 +5,7 @@ import { calcularDatas, calcularResultado, normalizarLinhaAnimal, previsaoPartoI
 import { nomearSemen } from './resumo'
 import { tabelas, useDb } from './db'
 
-const { propriedade, lote, semen, animal, atendimento, atendimentoAnimal } = tabelas
+const { propriedade, lote, semen, animal, atendimento, atendimentoAnimal, insumo } = tabelas
 
 type Db = Awaited<ReturnType<typeof useDb>>
 type Operacao = ReturnType<typeof esquemaOperacao.parse>
@@ -110,6 +110,14 @@ async function salvarAtendimentoAnimal(db: Db, vetId: string, dados: unknown) {
     .onConflictDoUpdate({ target: atendimentoAnimal.id, set: { ...linha, atualizadoEm: agora } })
 }
 
+async function salvarInsumo(db: Db, vetId: string, dados: unknown) {
+  const i = esquemas.insumo.parse(dados)
+  const [existente] = await db.select({ veterinarioId: insumo.veterinarioId }).from(insumo).where(eq(insumo.id, i.id))
+  if (existente && existente.veterinarioId !== vetId) throw new ErroOperacao('Item de estoque não encontrado.')
+  await db.insert(insumo).values({ ...i, veterinarioId: vetId })
+    .onConflictDoUpdate({ target: insumo.id, set: { ...i, atualizadoEm: agora } })
+}
+
 const salvar = {
   propriedade: salvarPropriedade,
   lote: salvarLote,
@@ -117,6 +125,7 @@ const salvar = {
   animal: salvarAnimal,
   atendimento: salvarAtendimento,
   atendimentoAnimal: salvarAtendimentoAnimal,
+  insumo: salvarInsumo,
 }
 
 /**
@@ -154,6 +163,7 @@ export async function montarSnapshot(vetId: string): Promise<Snapshot> {
   const semens = propriedades.length
     ? await db.select().from(semen).where(inArray(semen.propriedadeId, propriedades.map(p => p.id)))
     : []
+  const insumos = await db.select().from(insumo).where(eq(insumo.veterinarioId, vetId))
   const loteIds = lotes.map(l => l.id)
   const animais = loteIds.length ? await db.select().from(animal).where(inArray(animal.loteId, loteIds)) : []
   const atendimentos = loteIds.length ? await db.select().from(atendimento).where(inArray(atendimento.loteId, loteIds)) : []
@@ -194,6 +204,7 @@ export async function montarSnapshot(vetId: string): Promise<Snapshot> {
     animais: animais.map(semCarimbo),
     atendimentos: atendimentosComResultado.map(semCarimbo),
     atendimentoAnimais: atendimentoAnimais.map(semCarimbo),
+    insumos: insumos.map(({ veterinarioId: _, ...i }) => semCarimbo(i)),
   }
 }
 

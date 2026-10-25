@@ -41,6 +41,24 @@ export const semen = pgTable('semen', {
   nome: text('nome').notNull(),
   raca: text('raca'),
   partida: text('partida'),
+  // Estoque: doses contadas em estoqueEm; o restante desconta as inseminações desde então
+  estoqueDoses: integer('estoque_doses'),
+  estoqueEm: date('estoque_em'),
+  estoqueMinimo: integer('estoque_minimo'),
+  atualizadoEm: atualizadoEm(),
+})
+
+// Hormônios e implantes do veterinário. Saldo contado em saldoEm; o restante desconta
+// usoPorVaca por vaca que entrou em protocolo IATF desde então
+export const insumo = pgTable('insumo', {
+  id: uuid('id').primaryKey(),
+  veterinarioId: uuid('veterinario_id').notNull().references(() => veterinario.id, { onDelete: 'cascade' }),
+  nome: text('nome').notNull(),
+  unidade: text('unidade').notNull(),
+  saldo: numeric('saldo', { mode: 'number' }).notNull(),
+  saldoEm: date('saldo_em').notNull(),
+  usoPorVaca: numeric('uso_por_vaca', { mode: 'number' }),
+  minimo: numeric('minimo', { mode: 'number' }),
   atualizadoEm: atualizadoEm(),
 })
 

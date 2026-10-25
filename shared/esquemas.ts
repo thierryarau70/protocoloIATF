@@ -28,6 +28,21 @@ export const esquemaSemen = z.object({
   nome: z.string().trim().min(1).max(120),
   raca: textoOpcional,
   partida: textoOpcional,
+  estoqueDoses: z.number().int().min(0).max(100000).nullish().transform(v => v ?? null),
+  estoqueEm: dataOpcional,
+  estoqueMinimo: z.number().int().min(0).max(100000).nullish().transform(v => v ?? null),
+})
+
+const quantidade = z.number().min(0).max(1000000)
+
+export const esquemaInsumo = z.object({
+  id: z.uuid(),
+  nome: z.string().trim().min(1).max(120),
+  unidade: z.string().trim().min(1).max(30),
+  saldo: quantidade,
+  saldoEm: data,
+  usoPorVaca: quantidade.nullish().transform(v => v ?? null),
+  minimo: quantidade.nullish().transform(v => v ?? null),
 })
 
 export const esquemaAnimal = z.object({
@@ -83,13 +98,14 @@ export const esquemas = {
   animal: esquemaAnimal,
   atendimento: esquemaAtendimento,
   atendimentoAnimal: esquemaAtendimentoAnimal,
+  insumo: esquemaInsumo,
 }
 
 export type Entidade = keyof typeof esquemas
 
 export const esquemaOperacao = z.object({
   id: z.string().min(1).max(64),
-  entidade: z.enum(['propriedade', 'lote', 'semen', 'animal', 'atendimento', 'atendimentoAnimal']),
+  entidade: z.enum(['propriedade', 'lote', 'semen', 'animal', 'atendimento', 'atendimentoAnimal', 'insumo']),
   dados: z.record(z.string(), z.unknown()),
 })
 

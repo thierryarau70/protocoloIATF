@@ -92,6 +92,7 @@ async function salvar() {
       <CamposHistorico v-if="mostrarHistorico" v-model="historico" />
       <p v-if="erro" class="erro" role="alert">{{ erro }}</p>
     </form>
+    <ResumoVaca v-if="id && passagens.length" :passagens="passagens" class="passagens" />
     <PassagensAnimal v-if="id" :passagens="passagens" class="passagens" />
     <template #rodape>
       <button type="submit" form="form-animal" class="btn btn-primario btn-bloco">Salvar vaca</button>

@@ -1,0 +1,915 @@
+{
+  "id": "e25da40a-eee8-4f11-9903-6e5d40486eee",
+  "prevId": "e0453573-1ccb-434a-8d5a-0c63bd797c7a",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.animal": {
+      "name": "animal",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "lote_id": {
+          "name": "lote_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "numero": {
+          "name": "numero",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nascimento": {
+          "name": "nascimento",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "peso": {
+          "name": "peso",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raca": {
+          "name": "raca",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "previsao_parto": {
+          "name": "previsao_parto",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "touro_prenhez": {
+          "name": "touro_prenhez",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "num_prenhezes": {
+          "name": "num_prenhezes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "num_abortos": {
+          "name": "num_abortos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "num_perdas_gestacionais": {
+          "name": "num_perdas_gestacionais",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "num_partos": {
+          "name": "num_partos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dias_vazia": {
+          "name": "dias_vazia",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motivo_descarte": {
+          "name": "motivo_descarte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "animal_lote_id_lote_id_fk": {
+          "name": "animal_lote_id_lote_id_fk",
+          "tableFrom": "animal",
+          "tableTo": "lote",
+          "columnsFrom": [
+            "lote_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.atendimento": {
+      "name": "atendimento",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "lote_id": {
+          "name": "lote_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'dg'"
+        },
+        "data_d0": {
+          "name": "data_d0",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data_d8": {
+          "name": "data_d8",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data_d10": {
+          "name": "data_d10",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data_d45": {
+          "name": "data_d45",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gnrh": {
+          "name": "gnrh",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hora_d8": {
+          "name": "hora_d8",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hora_d10": {
+          "name": "hora_d10",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "inseminador": {
+          "name": "inseminador",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "animais_perdidos": {
+          "name": "animais_perdidos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "atendimento_lote_id_lote_id_fk": {
+          "name": "atendimento_lote_id_lote_id_fk",
+          "tableFrom": "atendimento",
+          "tableTo": "lote",
+          "columnsFrom": [
+            "lote_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.atendimento_animal": {
+      "name": "atendimento_animal",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "atendimento_id": {
+          "name": "atendimento_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "animal_id": {
+          "name": "animal_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "situacao_dg": {
+          "name": "situacao_dg",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendente'"
+        },
+        "idade_gestacional": {
+          "name": "idade_gestacional",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "destino_descarte": {
+          "name": "destino_descarte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motivo_refugo": {
+          "name": "motivo_refugo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "em_protocolo": {
+          "name": "em_protocolo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "hormonio_dia": {
+          "name": "hormonio_dia",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "inseminada": {
+          "name": "inseminada",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "justificativa_nao_inseminada": {
+          "name": "justificativa_nao_inseminada",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "semen_id": {
+          "name": "semen_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "obs": {
+          "name": "obs",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resultado_d45": {
+          "name": "resultado_d45",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "atendimento_animal_atendimento_id_atendimento_id_fk": {
+          "name": "atendimento_animal_atendimento_id_atendimento_id_fk",
+          "tableFrom": "atendimento_animal",
+          "tableTo": "atendimento",
+          "columnsFrom": [
+            "atendimento_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "atendimento_animal_animal_id_animal_id_fk": {
+          "name": "atendimento_animal_animal_id_animal_id_fk",
+          "tableFrom": "atendimento_animal",
+          "tableTo": "animal",
+          "columnsFrom": [
+            "animal_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "atendimento_animal_semen_id_semen_id_fk": {
+          "name": "atendimento_animal_semen_id_semen_id_fk",
+          "tableFrom": "atendimento_animal",
+          "tableTo": "semen",
+          "columnsFrom": [
+            "semen_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "atendimento_animal_atendimento_id_animal_id_unique": {
+          "name": "atendimento_animal_atendimento_id_animal_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "atendimento_id",
+            "animal_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.insumo": {
+      "name": "insumo",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "veterinario_id": {
+          "name": "veterinario_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unidade": {
+          "name": "unidade",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "saldo": {
+          "name": "saldo",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "saldo_em": {
+          "name": "saldo_em",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uso_por_vaca": {
+          "name": "uso_por_vaca",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "minimo": {
+          "name": "minimo",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "insumo_veterinario_id_veterinario_id_fk": {
+          "name": "insumo_veterinario_id_veterinario_id_fk",
+          "tableFrom": "insumo",
+          "tableTo": "veterinario",
+          "columnsFrom": [
+            "veterinario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.lote": {
+      "name": "lote",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "propriedade_id": {
+          "name": "propriedade_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "local_principal": {
+          "name": "local_principal",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "lote_propriedade_id_propriedade_id_fk": {
+          "name": "lote_propriedade_id_propriedade_id_fk",
+          "tableFrom": "lote",
+          "tableTo": "propriedade",
+          "columnsFrom": [
+            "propriedade_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.propriedade": {
+      "name": "propriedade",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "veterinario_id": {
+          "name": "veterinario_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proprietario": {
+          "name": "proprietario",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "local": {
+          "name": "local",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "inscricao": {
+          "name": "inscricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "semen_tipo": {
+          "name": "semen_tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "propriedade_veterinario_id_veterinario_id_fk": {
+          "name": "propriedade_veterinario_id_veterinario_id_fk",
+          "tableFrom": "propriedade",
+          "tableTo": "veterinario",
+          "columnsFrom": [
+            "veterinario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.redefinicao_senha": {
+      "name": "redefinicao_senha",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "veterinario_id": {
+          "name": "veterinario_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expira_em": {
+          "name": "expira_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usado_em": {
+          "name": "usado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "redefinicao_senha_veterinario_id_veterinario_id_fk": {
+          "name": "redefinicao_senha_veterinario_id_veterinario_id_fk",
+          "tableFrom": "redefinicao_senha",
+          "tableTo": "veterinario",
+          "columnsFrom": [
+            "veterinario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "redefinicao_senha_token_hash_unique": {
+          "name": "redefinicao_senha_token_hash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token_hash"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.semen": {
+      "name": "semen",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "propriedade_id": {
+          "name": "propriedade_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "raca": {
+          "name": "raca",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "partida": {
+          "name": "partida",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estoque_doses": {
+          "name": "estoque_doses",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estoque_em": {
+          "name": "estoque_em",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estoque_minimo": {
+          "name": "estoque_minimo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "semen_propriedade_id_propriedade_id_fk": {
+          "name": "semen_propriedade_id_propriedade_id_fk",
+          "tableFrom": "semen",
+          "tableTo": "propriedade",
+          "columnsFrom": [
+            "propriedade_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tentativa_acesso": {
+      "name": "tentativa_acesso",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "chave": {
+          "name": "chave",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "tentativa_acesso_chave_criado_em_idx": {
+          "name": "tentativa_acesso_chave_criado_em_idx",
+          "columns": [
+            {
+              "expression": "chave",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "criado_em",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.veterinario": {
+      "name": "veterinario",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "senha_hash": {
+          "name": "senha_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "crmv": {
+          "name": "crmv",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "empresa": {
+          "name": "empresa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "local": {
+          "name": "local",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_url": {
+          "name": "logo_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contato": {
+          "name": "contato",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "veterinario_email_unique": {
+          "name": "veterinario_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

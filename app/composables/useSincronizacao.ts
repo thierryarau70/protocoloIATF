@@ -62,6 +62,7 @@ async function baixarDados(): Promise<void> {
     animais: bancoLocal.animais,
     atendimentos: bancoLocal.atendimentos,
     atendimentoAnimais: bancoLocal.atendimentoAnimais,
+    insumos: bancoLocal.insumos,
   }
   await bancoLocal.transaction('rw', [...tabelasDeDados, bancoLocal.fila], async () => {
     const naFila = new Set((await bancoLocal.fila.toArray()).map(i => i.registroId))

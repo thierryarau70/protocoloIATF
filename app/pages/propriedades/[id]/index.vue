@@ -5,6 +5,8 @@ const { propriedade, lotes, carregando } = usePropriedade(id)
 const totalAnimais = computed(() => lotes.value.reduce((s, l) => s + l.totalAnimais, 0))
 const semen = { particular: 'Particular', misto: 'Misto' } as const
 const { semens } = useSemens(id)
+const { dados } = useDadosGerais()
+const estoque = (s: (typeof semens.value)[number]) => estoqueSemen(s, dados.value.atendimentos, dados.value.linhas)
 </script>
 
 <template>
@@ -23,6 +25,9 @@ const { semens } = useSemens(id)
 
       <div class="colunas">
         <div class="pilha">
+          <NuxtLink :to="`/propriedades/${propriedade.id}/painel`" class="btn btn-primario btn-bloco">
+            Painel da fazenda: resultados, vacas e partos
+          </NuxtLink>
           <section class="cartao">
             <dl class="dados">
               <div><dt>Proprietário</dt><dd>{{ propriedade.proprietario || '—' }}</dd></div>
@@ -40,6 +45,7 @@ const { semens } = useSemens(id)
                   <span class="nome">{{ s.nome }}</span>
                   <span v-if="detalheSemen(s)" class="suave">{{ detalheSemen(s) }}</span>
                 </span>
+                <span v-if="estoque(s)" class="selo" :class="estoque(s)!.baixo ? 'tom-ambar' : 'tom-verde'">{{ plural(estoque(s)!.restante, 'dose') }}</span>
                 <Icone nome="avancar" />
               </NuxtLink>
             </div>

@@ -120,4 +120,19 @@ describe('sincronização', () => {
     expect((await montarSnapshot(outroVet)).propriedades).toHaveLength(0)
     expect((await montarSnapshot(vet)).propriedades.find(p => p.id === ids.propriedade)?.nome).toBe('Santa Luzia')
   })
+
+  it('estoque de hormônio é do veterinário e o sêmen guarda as doses', async () => {
+    const insumoId = randomUUID()
+    const item = { id: insumoId, nome: 'Benzoato', unidade: 'mL', saldo: 100, saldoEm: '2026-10-01', usoPorVaca: 2, minimo: 20 }
+    expect((await aplicarOperacoes(vet, [op('insumo', item)]))[0]!.ok).toBe(true)
+    // Outro veterinário não altera o item de quem não é dele
+    const alheio = await aplicarOperacoes(outroVet, [op('insumo', { ...item, saldo: 0 })])
+    expect(alheio[0]).toMatchObject({ ok: false, erro: 'Item de estoque não encontrado.' })
+    expect((await montarSnapshot(vet)).insumos).toEqual([item])
+    expect((await montarSnapshot(outroVet)).insumos).toEqual([])
+
+    const s = (await montarSnapshot(vet)).semens[0]!
+    expect((await aplicarOperacoes(vet, [op('semen', { ...s, estoqueDoses: 30, estoqueEm: '2026-10-01', estoqueMinimo: 5 })]))[0]!.ok).toBe(true)
+    expect((await montarSnapshot(vet)).semens.find(x => x.id === s.id)).toMatchObject({ estoqueDoses: 30, estoqueEm: '2026-10-01', estoqueMinimo: 5 })
+  })
 })
