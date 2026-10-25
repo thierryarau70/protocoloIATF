@@ -14,7 +14,7 @@ const dataCalculada = (data?: string) => (data ? formatarData(data) : 'Calculada
 
 async function salvar() {
   await atualizar({ status: 'protocolo', gnrh: form.gnrh, horaD8: form.horaD8 || null, horaD10: form.horaD10 || null })
-  await navigateTo(`/atendimentos/${id()}`)
+  await concluirPara(`/atendimentos/${id()}`)
 }
 </script>
 

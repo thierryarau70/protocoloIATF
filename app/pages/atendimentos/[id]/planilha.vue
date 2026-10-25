@@ -43,7 +43,7 @@ const cadastrarSemen = computed(() => `/propriedades/${propriedade.value?.id}/se
               type="number" min="0" inputmode="numeric" class="entrada-compacta" :valor="atendimento.animaisPerdidos"
               @salvar="atualizar({ animaisPerdidos: Math.max(0, Number($event) || 0) })" />
           </label>
-          <NuxtLink :to="`/atendimentos/${atendimento.id}`" class="btn btn-primario concluir">Concluir</NuxtLink>
+          <a :href="`/atendimentos/${atendimento.id}`" class="btn btn-primario concluir" @click.prevent="concluirPara(`/atendimentos/${atendimento.id}`)">Concluir</a>
         </div>
       </template>
     </AppTela>

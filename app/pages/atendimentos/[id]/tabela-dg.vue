@@ -8,7 +8,7 @@ const sobrelinha = computed(() => [propriedade.value?.nome, lote.value?.nome, fo
 
 async function finalizar() {
   await atualizar({ status: 'finalizado' })
-  await navigateTo(`/atendimentos/${id()}`)
+  await concluirPara(`/atendimentos/${id()}`)
 }
 </script>
 

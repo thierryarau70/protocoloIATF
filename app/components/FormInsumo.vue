@@ -35,7 +35,7 @@ async function salvar() {
     saldo: numero(form.saldo) ?? 0, saldoEm: form.saldoEm || hoje(),
     usoPorVaca: numero(form.usoPorVaca), minimo: numero(form.minimo),
   })
-  await navigateTo('/estoque', { replace: true })
+  await concluirPara('/estoque')
 }
 </script>
 

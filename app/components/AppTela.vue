@@ -10,19 +10,21 @@ const props = withDefaults(defineProps<{
  * "Voltar" leva à tela de onde a pessoa veio, como o voltar do celular: um lote aberto pela lista
  * de Lotes volta para Lotes, e não para a fazenda. Vem do histórico do navegador ou, se o app
  * recarregou a página, da anotação de origem (utils/origem-tela.ts). O destino fixo (voltar.to)
- * vale quando a tela foi aberta direto por um link, ou quando a anterior é ela mesma (formulário
- * que salvou e substituiu a entrada do histórico).
+ * vale quando a tela foi aberta direto por um link, ou quando a anterior foi aberta a partir desta.
  */
 const router = useRouter()
 const anterior = ref<string | null>(null)
-const noHistorico = ref(false)
 onMounted(() => {
   // Rota atual do roteador: a da página (useRoute) ainda aponta para a tela anterior durante a transição
   const aqui = router.currentRoute.value.fullPath
   const back = (window.history.state as { back?: unknown } | null)?.back
-  noHistorico.value = typeof back === 'string' && back !== aqui
-  const origem = noHistorico.value ? back as string : lerOrigem(aqui)
-  anterior.value = origem && origem !== aqui ? origem : null})
+  // Uma tela aberta a partir desta (ex.: a planilha, no atendimento; o DG, no lote) não é "de onde
+  // veio": voltar para ela prenderia a pessoa indo e vindo entre as duas
+  const valida = (url: unknown): url is string =>
+    typeof url === 'string' && url !== aqui && !ehTelaFilha(url, aqui) && lerOrigem(url) !== aqui
+  const origem = valida(back) ? back : lerOrigem(aqui)
+  anterior.value = valida(origem) ? origem : null
+})
 const caminho = (url: string) => url.split(/[?#]/)[0]
 const rotulo = computed(() => {
   if (!props.voltar) return ''
@@ -34,9 +36,8 @@ function aoVoltar(e: MouseEvent) {
   // Ctrl/Cmd+clique abre em outra aba: deixa o link normal
   if (e.metaKey || e.ctrlKey || e.shiftKey) return
   e.preventDefault()
-  if (noHistorico.value) router.back()
-  // Substitui esta tela no histórico: senão o "Voltar" da tela de destino traria a pessoa de volta aqui
-  else navigateTo(anterior.value ?? props.voltar?.to, { replace: true })
+  const destino = anterior.value ?? props.voltar?.to
+  if (destino) irPara(destino)
 }
 </script>
 

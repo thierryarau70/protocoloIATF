@@ -10,7 +10,7 @@ watch(() => propriedade.value?.id, () => {
 
 async function salvar() {
   const salva = await salvarPropriedade({ id: props.id, ...form })
-  await navigateTo(`/propriedades/${salva.id}`, { replace: true })
+  await concluirPara(`/propriedades/${salva.id}`)
 }
 </script>
 

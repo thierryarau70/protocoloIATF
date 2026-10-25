@@ -14,7 +14,7 @@ async function salvar() {
   const salvo = await salvarLote({ id: props.id, ...form })
   // Vindo do fluxo do DG, volta para escolher o lote recém-criado
   const destino = route.query.voltar === 'dg' ? `/dg/${salvo.propriedadeId}` : `/lotes/${salvo.id}`
-  await navigateTo(destino, { replace: true })
+  await concluirPara(destino)
 }
 </script>
 

@@ -37,7 +37,7 @@ async function salvar() {
     estoqueEm: doses === null ? null : form.estoqueEm || hoje(),
     estoqueMinimo: doses === null ? null : inteiroOuNulo(form.estoqueMinimo),
   })
-  await navigateTo(voltar.value, { replace: true })
+  await concluirPara(voltar.value)
 }
 </script>
 

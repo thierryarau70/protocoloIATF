@@ -10,7 +10,7 @@ const opcoes = [{ valor: 'prenha' as const, rotulo: 'Prenha' }, { valor: 'vazia'
 
 async function finalizar() {
   await atualizar({ status: 'finalizado' })
-  await navigateTo(`/atendimentos/${id()}`)
+  await concluirPara(`/atendimentos/${id()}`)
 }
 </script>
 

@@ -64,10 +64,10 @@ function imprimir() {
     <!-- Raiz sempre presente: com v-if na raiz a transição entre telas trava -->
     <div v-if="atendimento" class="relatorio-pagina">
       <nav class="barra no-print" aria-label="Ações do relatório">
-        <NuxtLink :to="`/atendimentos/${atendimento.id}`" class="voltar">
+        <a :href="`/atendimentos/${atendimento.id}`" class="voltar" @click.prevent="concluirPara(`/atendimentos/${atendimento.id}`)">
           <Icone nome="voltar" />
           Voltar
-        </NuxtLink>
+        </a>
         <div class="acoes">
           <button type="button" class="btn btn-contorno" @click="baixarPlanilha">Baixar planilha</button>
           <button type="button" class="btn btn-primario" @click="imprimir">Imprimir / salvar PDF</button>

@@ -51,7 +51,7 @@ async function salvar() {
     diasVazia: inteiroOuNulo(h.diasVazia),
     motivoDescarte: h.motivoDescarte,
   })
-  await navigateTo(destino.value, { replace: true })
+  await concluirPara(destino.value)
 }
 </script>
 
