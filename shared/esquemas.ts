@@ -112,3 +112,12 @@ export const esquemaLogin = z.object({
   email: z.email().trim().toLowerCase(),
   senha: z.string().min(1).max(200),
 })
+
+export const esquemaEsqueci = z.object({
+  email: z.email().trim().toLowerCase(),
+})
+
+export const esquemaRedefinir = z.object({
+  token: z.string().min(20).max(200),
+  senha: z.string().min(8).max(200),
+})

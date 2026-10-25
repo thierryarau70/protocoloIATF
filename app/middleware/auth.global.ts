@@ -1,4 +1,4 @@
-const publicas = ['/entrar', '/cadastro']
+const publicas = ['/entrar', '/cadastro', '/esqueci', '/redefinir']
 
 export default defineNuxtRouteMiddleware(async (to) => {
   const { usuario, carregar } = useAuth()

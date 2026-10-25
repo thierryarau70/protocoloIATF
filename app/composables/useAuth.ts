@@ -40,6 +40,13 @@ export function useAuth() {
     async cadastrar(nome: string, email: string, senha: string) {
       await guardar(await api<Usuario>('/api/auth/cadastro', { method: 'POST', body: { nome, email, senha } }))
     },
+    /** Pede o link por e-mail; a resposta é a mesma com ou sem conta. */
+    async esqueci(email: string) {
+      await api('/api/auth/esqueci', { method: 'POST', body: { email } })
+    },
+    async redefinir(token: string, senha: string) {
+      await guardar(await api<Usuario>('/api/auth/redefinir', { method: 'POST', body: { token, senha } }))
+    },
     async sair() {
       await api('/api/auth/logout', { method: 'POST' }).catch(() => {})
       await guardar(null)

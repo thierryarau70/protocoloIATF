@@ -1,7 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
+import { useDb } from '../server/utils/db'
 import { exigirDentroDoLimite, limites, limparTentativas, minutosBloqueado, registrarTentativa } from '../server/utils/limite'
 
 const min = (n: number) => n * 60_000
+
+// Abre o banco em memória antes: a abertura não conta no tempo de cada teste
+beforeAll(() => useDb(), 30_000)
 
 describe('limite de tentativas', () => {
   it('libera até o máximo e bloqueia a partir dele', async () => {

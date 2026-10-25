@@ -8,6 +8,9 @@ export const limites = {
   loginEmail: (email: string): Limite => ({ chave: `login:email:${email}`, maximo: 5, janelaMin: 15 }),
   loginIp: (ip: string): Limite => ({ chave: `login:ip:${ip}`, maximo: 20, janelaMin: 15 }),
   cadastroIp: (ip: string): Limite => ({ chave: `cadastro:ip:${ip}`, maximo: 5, janelaMin: 60 }),
+  esqueciEmail: (email: string): Limite => ({ chave: `esqueci:email:${email}`, maximo: 3, janelaMin: 60 }),
+  esqueciIp: (ip: string): Limite => ({ chave: `esqueci:ip:${ip}`, maximo: 10, janelaMin: 60 }),
+  redefinirIp: (ip: string): Limite => ({ chave: `redefinir:ip:${ip}`, maximo: 10, janelaMin: 15 }),
 }
 
 /** Minutos até poder tentar de novo, ou null se ainda está dentro do limite. */

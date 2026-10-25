@@ -38,7 +38,12 @@ async function enviar() {
       <input id="senha" v-model="senha" class="entrada" type="password" autocomplete="current-password" required>
     </div>
     <template #rodape>
+      <NuxtLink to="/esqueci" class="esqueci">Esqueci a senha</NuxtLink>
       <NuxtLink to="/cadastro" class="btn btn-bloco">Criar conta de veterinário</NuxtLink>
     </template>
   </TelaAcesso>
 </template>
+
+<style scoped>
+.esqueci { align-self: center; min-height: 44px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 500; color: var(--primaria); }
+</style>

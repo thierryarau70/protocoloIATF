@@ -106,3 +106,13 @@ export const tentativaAcesso = pgTable('tentativa_acesso', {
   chave: text('chave').notNull(),
   criadoEm: timestamp('criado_em', { withTimezone: true }).notNull().defaultNow(),
 }, t => [index('tentativa_acesso_chave_criado_em_idx').on(t.chave, t.criadoEm)])
+
+// Links de "Esqueci a senha": só o hash do token fica no banco; vale 1 hora e uma vez
+export const redefinicaoSenha = pgTable('redefinicao_senha', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  veterinarioId: uuid('veterinario_id').notNull().references(() => veterinario.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull().unique(),
+  expiraEm: timestamp('expira_em', { withTimezone: true }).notNull(),
+  usadoEm: timestamp('usado_em', { withTimezone: true }),
+  criadoEm: timestamp('criado_em', { withTimezone: true }).notNull().defaultNow(),
+})
