@@ -2,6 +2,7 @@
 /** Convite para instalar o app. Na tela inicial pode ser dispensado; no perfil fica sempre. */
 const props = defineProps<{ dispensavel?: boolean }>()
 const { modo, dispensado, dispensar, instalar } = useInstalacao()
+const { pronto } = useProntoSemInternet()
 
 const passos = ref(false)
 const visivel = computed(() => {
@@ -37,6 +38,11 @@ const visivel = computed(() => {
         <button v-if="dispensavel" type="button" class="btn" @click="dispensar">Agora não</button>
       </div>
 
+      <p v-if="!dispensavel" class="sem-internet" :class="{ ok: pronto }" role="status">
+        <Icone :nome="pronto ? 'check' : 'nuvem'" :tamanho="18" />
+        {{ pronto ? 'Pronto para usar sem internet neste aparelho.' : 'Guardando o app para usar sem internet… deixe aberto com internet por alguns segundos.' }}
+      </p>
+
       <Transition name="passos">
         <ol v-if="passos && modo === 'ios'" class="passos">
           <li>No Safari, toque em <strong>Compartilhar</strong> (o quadrado com a seta para cima). No iOS 26, toque antes em <strong>⋯</strong>.</li>
@@ -60,6 +66,8 @@ const visivel = computed(() => {
 .textos { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .titulo { font-size: 17px; font-weight: 700; }
 .ok { color: var(--primaria); }
+.sem-internet { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 14px; color: var(--ambar-texto); }
+.sem-internet.ok { color: var(--primaria); font-weight: 500; }
 .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
 .acoes .btn { flex: 1; min-width: 140px; }
 .passos { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.4; }

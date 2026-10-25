@@ -3,6 +3,9 @@ export default defineNuxtConfig({
   // SPA: o app precisa abrir sem internet a partir do cache do service worker
   ssr: false,
   devtools: { enabled: false },
+  // Sem recarregar a página sozinho: sem internet isso abria a tela de erro do navegador.
+  // O plugin sem-internet.client.ts recarrega só quando há conexão.
+  experimental: { emitRouteChunkError: 'manual' },
   modules: ['nuxt-auth-utils', '@vite-pwa/nuxt'],
   css: [
     '@fontsource/dm-sans/400.css',

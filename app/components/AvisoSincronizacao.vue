@@ -1,5 +1,14 @@
 <script setup lang="ts">
 const { online, pendentes, rejeitados, limparRejeitados } = useSincronizacao()
+const aviso = useAvisoApp()
+// Avisa uma vez quando o app termina de ser guardado para abrir sem internet
+const { prontoAgora } = useProntoSemInternet()
+const mostrarPronto = ref(false)
+watch(prontoAgora, (v) => {
+  if (!v) return
+  mostrarPronto.value = true
+  setTimeout(() => { mostrarPronto.value = false }, 6000)
+}, { immediate: true })
 
 // Mostra "Tudo sincronizado" por alguns segundos depois que a fila esvazia
 const concluiu = ref(false)
@@ -16,6 +25,21 @@ onBeforeUnmount(() => clearTimeout(temporizador))
 
 <template>
   <div aria-live="polite">
+    <Transition name="faixa">
+    <div v-if="aviso" class="faixa faixa-offline">
+      <Icone nome="alerta" :tamanho="18" />
+      <div class="texto">{{ aviso }}</div>
+      <button type="button" class="fechar" aria-label="Fechar aviso" @click="aviso = ''">
+        <Icone nome="fechar" :tamanho="18" />
+      </button>
+    </div>
+    </Transition>
+    <Transition name="faixa">
+    <div v-if="mostrarPronto && online" class="faixa faixa-ok">
+      <Icone nome="check" :tamanho="18" />
+      <div class="texto">Pronto: o app já abre sem internet neste aparelho.</div>
+    </div>
+    </Transition>
     <Transition name="faixa">
     <div v-if="rejeitados.length" class="faixa faixa-erro">
       <Icone nome="alerta" :tamanho="18" />
