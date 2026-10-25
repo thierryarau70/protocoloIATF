@@ -1,20 +1,47 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   titulo: string
   sobrelinha?: string
   voltar?: { to: string, rotulo: string }
   larga?: boolean
 }>(), { larga: false })
+
+/**
+ * "Voltar" leva à tela de onde a pessoa veio, como o voltar do celular: um lote aberto pela lista
+ * de Lotes volta para Lotes, e não para a fazenda. O destino fixo (voltar.to) vale quando a tela foi
+ * aberta direto por um link, ou quando a anterior é ela mesma (formulário que salvou e substituiu
+ * a entrada do histórico).
+ */
+const route = useRoute()
+const router = useRouter()
+const anterior = ref<string | null>(null)
+onMounted(() => {
+  const back = (window.history.state as { back?: unknown } | null)?.back
+  anterior.value = typeof back === 'string' && back !== route.fullPath ? back : null
+})
+const caminho = (url: string) => url.split(/[?#]/)[0]
+const rotulo = computed(() => {
+  if (!props.voltar) return ''
+  return !anterior.value || caminho(anterior.value) === caminho(props.voltar.to) ? props.voltar.rotulo : 'Voltar'
+})
+
+function aoVoltar(e: MouseEvent) {
+  // Ctrl/Cmd+clique abre em outra aba: deixa o link normal
+  if (e.metaKey || e.ctrlKey || e.shiftKey) return
+  e.preventDefault()
+  if (anterior.value) router.back()
+  else if (props.voltar) navigateTo(props.voltar.to)
+}
 </script>
 
 <template>
   <div class="tela" :class="{ larga }">
     <header class="tela-topo">
       <div class="tela-largura topo-conteudo">
-        <NuxtLink v-if="voltar" :to="voltar.to" class="voltar">
+        <a v-if="voltar" :href="anterior ?? voltar.to" class="voltar" @click="aoVoltar">
           <Icone nome="voltar" />
-          {{ voltar.rotulo }}
-        </NuxtLink>
+          {{ rotulo }}
+        </a>
         <div class="titulos-linha">
           <div class="titulos">
             <div v-if="sobrelinha" class="sobrelinha">{{ sobrelinha }}</div>
