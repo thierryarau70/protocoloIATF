@@ -116,7 +116,8 @@ function rolarAteAtivo() {
 
 <style scoped>
 .envoltorio { position: relative; }
-.lupa { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--texto-suave); pointer-events: none; }
+.lupa { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--texto-suave); pointer-events: none; transition: color var(--rapido), transform var(--medio) var(--curva); }
+.envoltorio:focus-within .lupa { color: var(--primaria); transform: translateY(-50%) scale(1.12) rotate(-8deg); }
 .seta { position: absolute; right: 14px; top: 50%; transform: translateY(-50%) rotate(90deg); color: var(--texto-suave); pointer-events: none; transition: transform var(--medio) var(--curva); }
 .seta.aberta { transform: translateY(-50%) rotate(-90deg); }
 .entrada { padding-left: 42px; padding-right: 40px; }

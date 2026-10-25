@@ -84,13 +84,63 @@ button { cursor: pointer; }
 /* Campos */
 .campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .campo label, .rotulo { font-size: 13px; font-weight: 500; color: var(--texto-suave); }
+.campo label { align-self: flex-start; transition: color var(--rapido), transform var(--medio) var(--curva); }
+/* O rótulo acompanha o campo em foco: fica verde e anda um pouco */
+.campo:focus-within > label { color: var(--primaria); transform: translateX(2px); }
 .entrada {
   width: 100%; height: var(--toque); padding: 0 14px; border: 1px solid var(--borda-campo); border-radius: var(--raio);
   background: var(--superficie); font-size: 16px; color: var(--texto);
-  transition: border-color var(--rapido), outline-color var(--rapido);
+  transition: border-color var(--rapido), box-shadow var(--medio) var(--curva), background-color var(--rapido);
 }
-.entrada:focus { border-color: var(--primaria); outline: 2px solid var(--primaria-suave); }
+.entrada::placeholder { color: var(--texto-suave); opacity: .8; transition: opacity var(--rapido); }
+.entrada:hover:not(:focus, :disabled) { border-color: var(--neutro-borda); }
+/* Foco: o anel cresce em volta do campo em vez de aparecer de uma vez */
+.entrada:focus { border-color: var(--primaria); outline: none; box-shadow: 0 0 0 4px var(--primaria-suave); }
+.entrada:focus::placeholder { opacity: .45; }
+/* Erro depois que a pessoa mexeu no campo: borda vermelha e uma sacudida curta */
+.entrada:user-invalid { border-color: var(--vermelho-borda); animation: tremer 320ms var(--curva); }
+.entrada:user-invalid:focus { box-shadow: 0 0 0 4px var(--vermelho-suave); }
+.entrada:disabled { background: var(--superficie-2); color: var(--texto-suave); }
 .entrada-compacta { height: 44px; border-radius: 10px; font-size: 15px; padding: 0 10px; }
+.entrada-compacta:focus { box-shadow: 0 0 0 3px var(--primaria-suave); }
+.entrada::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .6; transition: opacity var(--rapido); }
+.entrada:hover::-webkit-calendar-picker-indicator, .entrada:focus::-webkit-calendar-picker-indicator { opacity: 1; }
+
+/* Select: seta própria que gira ao abrir */
+select.entrada {
+  appearance: none; padding-right: 40px; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235B6B60' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+}
+/* Navegadores com select personalizável (Chrome/Android): a lista desce animada */
+@supports (appearance: base-select) {
+  select.entrada, select.entrada::picker(select) { appearance: base-select; }
+  select.entrada { background-image: none; display: flex; align-items: center; gap: 8px; padding-right: 12px; }
+  select.entrada::picker-icon {
+    content: ''; flex: none; width: 18px; height: 18px; margin-left: auto; color: var(--texto-suave);
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+    transition: transform var(--medio) var(--curva), color var(--rapido);
+  }
+  select.entrada:open::picker-icon { transform: rotate(180deg); color: var(--primaria); }
+  select.entrada::picker(select) {
+    margin-top: 4px; padding: 6px; border: 1px solid var(--borda-campo); border-radius: var(--raio);
+    background: var(--superficie); box-shadow: 0 8px 24px rgb(27 42 34 / .12);
+    transform-origin: top center;
+    transition: opacity var(--rapido), transform var(--medio) var(--curva), overlay var(--medio) allow-discrete, display var(--medio) allow-discrete;
+  }
+  select.entrada:not(:open)::picker(select) { opacity: 0; transform: translateY(-6px) scaleY(.96); }
+  @starting-style {
+    select.entrada:open::picker(select) { opacity: 0; transform: translateY(-6px) scaleY(.96); }
+  }
+  select.entrada option {
+    min-height: 44px; padding: 0 12px; border-radius: 8px; display: flex; align-items: center; gap: 8px;
+    font-size: 15px; transition: background-color 100ms;
+  }
+  select.entrada option:hover, select.entrada option:focus-visible { background: var(--superficie-2); outline: none; }
+  select.entrada option:checked { color: var(--primaria); font-weight: 700; background: none; }
+  select.entrada option::checkmark { order: 1; margin-left: auto; content: '✓'; }
+}
 .linha-campos { display: flex; gap: 10px; }
 .linha-campos > * { flex: 1; }
 
@@ -133,6 +183,11 @@ button { cursor: pointer; }
 @keyframes crescer { from { transform: scaleX(0); } }
 @keyframes marcar { 40% { transform: scale(1.05); } }
 @keyframes tracar { to { stroke-dashoffset: 0; } }
+@keyframes tremer { 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
+@keyframes salvo { 0% { box-shadow: 0 0 0 0 rgb(31 92 69 / .35); } 100% { box-shadow: 0 0 0 8px rgb(31 92 69 / 0); } }
+
+/* Mensagem de erro entra sacudindo, para chamar o olho */
+.erro { animation: surgir var(--medio) var(--curva), tremer 320ms var(--curva) 120ms; }
 
 /* Itens de lista e cartões entram em cascata (até o 8º; os demais juntos) */
 .cascata { animation: surgir var(--medio) var(--curva) backwards; }
