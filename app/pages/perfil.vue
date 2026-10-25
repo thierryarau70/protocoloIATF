@@ -68,6 +68,7 @@ const graficoAnos = computed(() => (perfil.value?.resumo.iatfPorAno ?? []).map(a
           <p v-else class="dica">A comparação por sêmen aparece aqui depois do primeiro IATF finalizado com o sêmen registrado na planilha.</p>
         </div>
         <p v-if="erro" class="dica">{{ erro }}</p>
+        <CartaoInstalar />
       </section>
 
       <form v-if="carregado" class="pilha" @submit.prevent="enviar">

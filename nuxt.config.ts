@@ -56,7 +56,8 @@ export default defineNuxtConfig({
       navigateFallbackDenylist: [/^\/api\//],
       globPatterns: ['**/*.{js,css,html,woff2,woff,png,svg,ico}'],
     },
-    client: { installPrompt: false },
+    // Guarda o pedido de instalação do navegador para o botão "Instalar app" (CartaoInstalar)
+    client: { installPrompt: true },
     devOptions: { enabled: false },
   },
 })
