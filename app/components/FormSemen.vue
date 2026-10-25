@@ -29,10 +29,7 @@ async function salvar() {
         <label for="nome">Touro</label>
         <input id="nome" v-model="form.nome" class="entrada" placeholder="Nome do touro" autocapitalize="words" autocomplete="off" required>
       </div>
-      <div class="campo">
-        <label for="raca">Raça</label>
-        <input id="raca" v-model="form.raca" class="entrada" autocomplete="off">
-      </div>
+      <CampoEscolhaBusca v-model="form.raca" rotulo="Raça" :opcoes="racasBovinas" placeholder="Buscar raça" sem-resultado="Nenhuma raça encontrada" />
       <div class="campo">
         <label for="partida">Central / partida</label>
         <input id="partida" v-model="form.partida" class="entrada" placeholder="Ex.: ABS 123" autocomplete="off">

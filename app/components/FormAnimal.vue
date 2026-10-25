@@ -76,10 +76,7 @@ async function salvar() {
           <input id="peso" v-model="form.peso" class="entrada" inputmode="decimal">
         </div>
       </div>
-      <div class="campo">
-        <label for="raca">Raça</label>
-        <input id="raca" v-model="form.raca" class="entrada" autocomplete="off">
-      </div>
+      <CampoEscolhaBusca v-model="form.raca" rotulo="Raça" :opcoes="racasBovinas" placeholder="Buscar raça" sem-resultado="Nenhuma raça encontrada" />
       <fieldset class="cartao-suave prenha">
         <legend class="sr-only">Se a vaca estiver prenha</legend>
         <div class="titulo-bloco" aria-hidden="true">Se a vaca estiver prenha</div>
