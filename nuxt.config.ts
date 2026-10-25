@@ -30,6 +30,8 @@ export default defineNuxtConfig({
   },
   nitro: {
     prerender: { routes: ['/'] },
+    // São Paulo, perto do banco no Neon (aws-sa-east-1)
+    vercel: { functions: { regions: ['gru1'] } },
   },
   pwa: {
     registerType: 'autoUpdate',
