@@ -42,6 +42,8 @@ as migrações rodam no build, então um PR de teste mexeria nos dados reais.
 3. O script `vercel-build` roda os testes, aplica as migrações (`server/database/migrar.mjs`, que mostra o erro se falhar) e depois faz o build: com teste falhando, nada é publicado.
 4. O GitHub Actions (`.github/workflows/ci.yml`) roda tipos, testes e build em cada push e pull request.
 
+"Esqueci a senha" só aparece com `RESEND_API_KEY` (e `EMAIL_REMETENTE`, de um domínio verificado no Resend) definida no build. Para testar local sem chave: `NUXT_PUBLIC_EMAIL_ATIVO=true npm run dev` (o e-mail sai no terminal).
+
 Migrações novas: altere `server/database/schema.ts` e rode `npm run db:generate`.
 
 ## Arquitetura

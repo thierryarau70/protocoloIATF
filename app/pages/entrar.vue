@@ -2,6 +2,7 @@
 definePageMeta({ layout: 'vazio' })
 
 const { entrar } = useAuth()
+const emailAtivo = useRuntimeConfig().public.emailAtivo
 const email = ref('')
 const senha = ref('')
 const erro = ref('')
@@ -38,7 +39,7 @@ async function enviar() {
       <input id="senha" v-model="senha" class="entrada" type="password" autocomplete="current-password" required>
     </div>
     <template #rodape>
-      <NuxtLink to="/esqueci" class="esqueci">Esqueci a senha</NuxtLink>
+      <NuxtLink v-if="emailAtivo" to="/esqueci" class="esqueci">Esqueci a senha</NuxtLink>
       <NuxtLink to="/cadastro" class="btn btn-bloco">Criar conta de veterinário</NuxtLink>
     </template>
   </TelaAcesso>

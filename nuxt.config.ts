@@ -28,6 +28,10 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     session: { maxAge: 60 * 60 * 24 * 60 },
+    public: {
+      // "Esqueci a senha" só aparece quando há como mandar o e-mail (RESEND_API_KEY no build)
+      emailAtivo: !!process.env.RESEND_API_KEY,
+    },
   },
   nitro: {
     prerender: { routes: ['/'] },

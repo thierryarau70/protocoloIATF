@@ -3,6 +3,7 @@ import { esquemaEsqueci } from '#shared/esquemas'
 const escapar = (s: string) => s.replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`)
 
 export default defineEventHandler(async (event) => {
+  if (!useRuntimeConfig(event).public.emailAtivo) throw createError({ statusCode: 503, message: 'A recuperação de senha por e-mail ainda não está disponível. Fale com o suporte.' })
   const { email } = await readValidatedBody(event, esquemaEsqueci.parse)
   const porEmail = limites.esqueciEmail(email)
   const porIp = limites.esqueciIp(getRequestIP(event, { xForwardedFor: true }) ?? 'desconhecido')
