@@ -26,6 +26,7 @@ function link(a: { id: string, status: string }) {
 
     <div class="pilha">
       <CartaoInstalar dispensavel />
+      <AgendaManejos />
       <div class="atalhos">
         <NuxtLink v-for="a in atalhos" :key="a.to" :to="a.to" class="atalho cascata" :class="{ destaque: 'destaque' in a }">
           <span class="atalho-icone"><Icone :nome="a.icone" :tamanho="24" /></span>
