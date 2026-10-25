@@ -13,58 +13,61 @@ const linkAtendimento = (a: { id: string, status: string }) => (a.status === 'dg
 </script>
 
 <template>
-  <AppTela
-    v-if="lote"
-    :titulo="lote.nome"
-    :sobrelinha="propriedade?.nome"
-    :voltar="{ to: `/propriedades/${lote.propriedadeId}`, rotulo: 'Propriedade' }"
-    larga
-  >
-    <template #acao>
-      <NuxtLink :to="`/lotes/${lote.id}/editar`" class="btn btn-contorno">Editar</NuxtLink>
-    </template>
-    <template #subtitulo>
-      <div class="suave">{{ plural(animais.length, 'vaca') }}<template v-if="lote.localPrincipal"> · {{ lote.localPrincipal }}</template></div>
-    </template>
+  <div>
+    <!-- Raiz sempre presente: com v-if na raiz a transição entre telas trava -->
+    <AppTela
+      v-if="lote"
+      :titulo="lote.nome"
+      :sobrelinha="propriedade?.nome"
+      :voltar="{ to: `/propriedades/${lote.propriedadeId}`, rotulo: 'Propriedade' }"
+      larga
+    >
+      <template #acao>
+        <NuxtLink :to="`/lotes/${lote.id}/editar`" class="btn btn-contorno">Editar</NuxtLink>
+      </template>
+      <template #subtitulo>
+        <div class="suave">{{ plural(animais.length, 'vaca') }}<template v-if="lote.localPrincipal"> · {{ lote.localPrincipal }}</template></div>
+      </template>
 
-    <div class="colunas">
-      <section class="pilha-curta">
-        <h2 class="titulo-secao">Vacas</h2>
-        <CampoBusca v-model="busca" rotulo="Buscar vaca pelo número" numerico />
-        <div class="lista-vacas">
-          <NuxtLink v-for="a in filtrados" :key="a.id" :to="`/animais/${a.id}`" class="vaca">
-            <span class="numero">{{ a.numero }}</span>
-            <span class="suave">{{ [a.raca, a.peso ? `${a.peso} kg` : null].filter(Boolean).join(' · ') || 'Sem dados' }}</span>
-            <span v-if="a.previsaoParto" class="selo tom-verde">Parto {{ formatarData(a.previsaoParto) }}</span>
-          </NuxtLink>
-        </div>
-        <div v-if="busca && !filtrados.length" class="vazio">
-          Nenhuma vaca com o número {{ busca }}.
-          <NuxtLink :to="`/animais/nova?lote=${lote.id}&numero=${encodeURIComponent(busca)}`" class="btn btn-contorno">Cadastrar vaca {{ busca }}</NuxtLink>
-        </div>
-        <div v-else-if="!animais.length" class="vazio">Nenhuma vaca neste lote.</div>
-      </section>
+      <div class="colunas">
+        <section class="pilha-curta">
+          <h2 class="titulo-secao">Vacas</h2>
+          <CampoBusca v-model="busca" rotulo="Buscar vaca pelo número" numerico />
+          <div class="lista-vacas">
+            <NuxtLink v-for="a in filtrados" :key="a.id" :to="`/animais/${a.id}`" class="vaca">
+              <span class="numero">{{ a.numero }}</span>
+              <span class="suave">{{ [a.raca, a.peso ? `${a.peso} kg` : null].filter(Boolean).join(' · ') || 'Sem dados' }}</span>
+              <span v-if="a.previsaoParto" class="selo tom-verde">Parto {{ formatarData(a.previsaoParto) }}</span>
+            </NuxtLink>
+          </div>
+          <div v-if="busca && !filtrados.length" class="vazio">
+            Nenhuma vaca com o número {{ busca }}.
+            <NuxtLink :to="`/animais/nova?lote=${lote.id}&numero=${encodeURIComponent(busca)}`" class="btn btn-contorno">Cadastrar vaca {{ busca }}</NuxtLink>
+          </div>
+          <div v-else-if="!animais.length" class="vazio">Nenhuma vaca neste lote.</div>
+        </section>
 
-      <section class="pilha-curta">
-        <h2 class="titulo-secao">Atendimentos</h2>
-        <ItemLista
-          v-for="a in atendimentos" :key="a.id" :to="linkAtendimento(a)"
-          :titulo="`D0 ${formatarData(a.dataD0)}`"
-          :subtitulo="`${a.tipo === 'so_dg' ? 'Só DG' : 'DG + IATF'} · ${rotuloStatus[a.status]}`"
-        >
-          <span v-if="a.resultado?.taxaPrenhez != null" class="selo tom-verde">Prenhez {{ formatarTaxa(a.resultado.taxaPrenhez) }}</span>
-        </ItemLista>
-        <div v-if="!atendimentos.length" class="vazio">Nenhum atendimento neste lote.</div>
-      </section>
-    </div>
-
-    <template #rodape>
-      <div class="acoes">
-        <NuxtLink :to="`/animais/nova?lote=${lote.id}`" class="btn btn-contorno">+ Vaca</NuxtLink>
-        <button type="button" class="btn btn-primario" @click="novoDg">Iniciar DG</button>
+        <section class="pilha-curta">
+          <h2 class="titulo-secao">Atendimentos</h2>
+          <ItemLista
+            v-for="a in atendimentos" :key="a.id" :to="linkAtendimento(a)"
+            :titulo="`D0 ${formatarData(a.dataD0)}`"
+            :subtitulo="`${a.tipo === 'so_dg' ? 'Só DG' : 'DG + IATF'} · ${rotuloStatus[a.status]}`"
+          >
+            <span v-if="a.resultado?.taxaPrenhez != null" class="selo tom-verde">Prenhez {{ formatarTaxa(a.resultado.taxaPrenhez) }}</span>
+          </ItemLista>
+          <div v-if="!atendimentos.length" class="vazio">Nenhum atendimento neste lote.</div>
+        </section>
       </div>
-    </template>
-  </AppTela>
+
+      <template #rodape>
+        <div class="acoes">
+          <NuxtLink :to="`/animais/nova?lote=${lote.id}`" class="btn btn-contorno">+ Vaca</NuxtLink>
+          <button type="button" class="btn btn-primario" @click="novoDg">Iniciar DG</button>
+        </div>
+      </template>
+    </AppTela>
+  </div>
 </template>
 
 <style scoped>

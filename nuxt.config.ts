@@ -59,6 +59,13 @@ export default defineNuxtConfig({
       navigateFallback: '/',
       navigateFallbackDenylist: [/^\/api\//],
       globPatterns: ['**/*.{js,css,html,woff2,woff,png,svg,ico}'],
+      // Leitor de brinco (Tesseract.js): worker, núcleo e idioma vêm do CDN; guardados no primeiro
+      // uso, a leitura funciona sem internet depois
+      runtimeCaching: [{
+        urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/npm\/(tesseract\.js|tesseract\.js-core|@tesseract\.js-data)[@/]/,
+        handler: 'CacheFirst',
+        options: { cacheName: 'leitor-brinco', expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 }, cacheableResponse: { statuses: [0, 200] } },
+      }],
     },
     // Guarda o pedido de instalação do navegador para o botão "Instalar app" (CartaoInstalar)
     client: { installPrompt: true },

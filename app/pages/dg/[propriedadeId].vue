@@ -12,35 +12,38 @@ async function escolher(loteId: string) {
 </script>
 
 <template>
-  <AppTela v-if="propriedade" titulo="Escolha o lote" :sobrelinha="propriedade.nome" :voltar="{ to: '/dg', rotulo: 'Fazendas' }">
-    <template #topo>
-      <EtapasFluxo :atual="2" />
-    </template>
-    <div class="pilha">
-      <div v-if="propriedade.proprietario" class="cartao-suave proprietario">
-        <span>Proprietário</span>
-        <strong>{{ propriedade.proprietario }}</strong>
+  <div>
+    <!-- Raiz sempre presente: com v-if na raiz a transição entre telas trava -->
+    <AppTela v-if="propriedade" titulo="Escolha o lote" :sobrelinha="propriedade.nome" :voltar="{ to: '/dg', rotulo: 'Fazendas' }">
+      <template #topo>
+        <EtapasFluxo :atual="2" />
+      </template>
+      <div class="pilha">
+        <div v-if="propriedade.proprietario" class="cartao-suave proprietario">
+          <span>Proprietário</span>
+          <strong>{{ propriedade.proprietario }}</strong>
+        </div>
+        <div class="suave">{{ plural(lotes.length, 'lote') }} · {{ plural(totalAnimais, 'animal', 'animais') }} (só vacas)</div>
+        <button v-for="l in lotes" :key="l.id" type="button" class="lote" @click="escolher(l.id)">
+          <span class="corpo">
+            <span class="titulo">{{ l.nome }}</span>
+            <span class="suave">{{ plural(l.totalAnimais, 'vaca') }}</span>
+          </span>
+          <Icone nome="avancar" />
+        </button>
+        <div v-if="!carregando && !lotes.length" class="vazio">Esta fazenda ainda não tem lote.</div>
+        <NuxtLink :to="`/lotes/novo?propriedade=${propriedade.id}&voltar=dg`" class="btn btn-tracejado btn-bloco">
+          + Novo lote
+        </NuxtLink>
       </div>
-      <div class="suave">{{ plural(lotes.length, 'lote') }} · {{ plural(totalAnimais, 'animal', 'animais') }} (só vacas)</div>
-      <button v-for="l in lotes" :key="l.id" type="button" class="lote" @click="escolher(l.id)">
-        <span class="corpo">
-          <span class="titulo">{{ l.nome }}</span>
-          <span class="suave">{{ plural(l.totalAnimais, 'vaca') }}</span>
-        </span>
-        <Icone nome="avancar" />
-      </button>
-      <div v-if="!carregando && !lotes.length" class="vazio">Esta fazenda ainda não tem lote.</div>
-      <NuxtLink :to="`/lotes/novo?propriedade=${propriedade.id}&voltar=dg`" class="btn btn-tracejado btn-bloco">
-        + Novo lote
-      </NuxtLink>
-    </div>
-    <template #rodape>
-      <div class="data">
-        <label for="data">Data do atendimento</label>
-        <input id="data" v-model="dataAtendimento" type="date" class="entrada entrada-compacta">
-      </div>
-    </template>
-  </AppTela>
+      <template #rodape>
+        <div class="data">
+          <label for="data">Data do atendimento</label>
+          <input id="data" v-model="dataAtendimento" type="date" class="entrada entrada-compacta">
+        </div>
+      </template>
+    </AppTela>
+  </div>
 </template>
 
 <style scoped>

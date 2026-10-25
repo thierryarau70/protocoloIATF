@@ -9,71 +9,94 @@ const soDg = computed(() => atendimento.value?.tipo === 'so_dg')
 const sobrelinha = computed(() => [propriedade.value?.nome, lote.value?.nome, formatarData(atendimento.value?.dataD0)].filter(Boolean).join(' · '))
 const tipos = [{ valor: 'dg_iatf' as const, rotulo: 'DG + IATF' }, { valor: 'so_dg' as const, rotulo: 'Só DG' }]
 
+// Modo curral: uma vaca por vez, botões grandes, voz e foto do brinco. Fica lembrado no aparelho
+const CHAVE_CURRAL = 'iatf:modo-curral'
+const modoCurral = ref(lerCurral())
+watch(modoCurral, (v) => {
+  try { localStorage.setItem(CHAVE_CURRAL, v ? '1' : '0') }
+  catch { /* sem armazenamento: vale só nesta visita */ }
+})
+function lerCurral() {
+  try { return localStorage.getItem(CHAVE_CURRAL) === '1' }
+  catch { return false }
+}
+
 const novaVaca = computed(() => `/animais/nova?lote=${atendimento.value?.loteId}&atendimento=${id()}${busca.value ? `&numero=${encodeURIComponent(busca.value)}` : ''}`)
 </script>
 
 <template>
-  <AppTela
-    v-if="atendimento"
-    :titulo="soDg ? 'DG' : 'DG + cadastro (D0)'"
-    :sobrelinha="sobrelinha"
-    :voltar="{ to: `/lotes/${atendimento.loteId}`, rotulo: 'Lote' }"
-    larga
-  >
-    <template #topo>
-      <div class="segmentado" role="group" aria-label="Tipo de atendimento">
-        <button
-          v-for="t in tipos" :key="t.valor" type="button" :aria-pressed="atendimento.tipo === t.valor"
-          @click="atualizar({ tipo: t.valor })"
-        >
-          {{ t.rotulo }}
+  <div>
+    <!-- Raiz sempre presente: com v-if na raiz a transição entre telas trava -->
+    <AppTela
+      v-if="atendimento"
+      :titulo="soDg ? 'DG' : 'DG + cadastro (D0)'"
+      :sobrelinha="sobrelinha"
+      :voltar="{ to: `/lotes/${atendimento.loteId}`, rotulo: 'Lote' }"
+      larga
+    >
+      <template #topo>
+        <div class="segmentado" role="group" aria-label="Tipo de atendimento">
+          <button
+            v-for="t in tipos" :key="t.valor" type="button" :aria-pressed="atendimento.tipo === t.valor"
+            @click="atualizar({ tipo: t.valor })"
+          >
+            {{ t.rotulo }}
+          </button>
+        </div>
+        <EtapasFluxo v-if="!soDg" :atual="3" />
+      </template>
+
+      <div class="pilha">
+        <div class="estatisticas">
+          <Estatistica :valor="contagem.prenha" rotulo="Prenhas" tom="verde" />
+          <Estatistica :valor="contagem.vazia" :rotulo="soDg ? 'Vazias' : 'Vazias aptas'" tom="ambar" />
+          <Estatistica :valor="contagem.descarte + contagem.refugo" rotulo="Desc./Refugo" tom="vermelho" />
+          <Estatistica :valor="contagem.pendente" rotulo="Pendentes" />
+        </div>
+        <p class="dica">
+          <template v-if="soDg">Fazenda sem inseminação: o atendimento termina na tabela do DG, sem protocolo.</template>
+          <template v-else>Só as vazias aptas vão para o IATF. Prenhas, descartes e refugos ficam de fora.</template>
+        </p>
+
+        <button type="button" class="btn btn-bloco" :class="modoCurral ? 'btn-primario' : 'btn-contorno'" :aria-pressed="modoCurral" @click="modoCurral = !modoCurral">
+          {{ modoCurral ? 'Sair do modo curral (ver a lista)' : 'Modo curral: uma vaca por vez, voz e foto' }}
         </button>
-      </div>
-      <EtapasFluxo v-if="!soDg" :atual="3" />
-    </template>
 
-    <div class="pilha">
-      <div class="estatisticas">
-        <Estatistica :valor="contagem.prenha" rotulo="Prenhas" tom="verde" />
-        <Estatistica :valor="contagem.vazia" :rotulo="soDg ? 'Vazias' : 'Vazias aptas'" tom="ambar" />
-        <Estatistica :valor="contagem.descarte + contagem.refugo" rotulo="Desc./Refugo" tom="vermelho" />
-        <Estatistica :valor="contagem.pendente" rotulo="Pendentes" />
-      </div>
-      <p class="dica">
-        <template v-if="soDg">Fazenda sem inseminação: o atendimento termina na tabela do DG, sem protocolo.</template>
-        <template v-else>Só as vazias aptas vão para o IATF. Prenhas, descartes e refugos ficam de fora.</template>
-      </p>
+        <ModoCurral v-if="modoCurral && vacas.length" :vacas="vacas" @linha="(v, campos) => atualizarVaca(v, campos)" />
 
-      <CampoBusca v-model="busca" rotulo="Buscar vaca pelo número" numerico />
+        <template v-if="!modoCurral">
+        <CampoBusca v-model="busca" rotulo="Buscar vaca pelo número" numerico />
 
-      <div class="lista">
-        <LinhaDg
-          v-for="v in filtradas" :key="v.animal.id" :vaca="v"
-          @linha="atualizarVaca(v, $event)"
-          @animal="atualizarAnimal(v.animal.id, $event)"
-        />
+        <div class="lista">
+          <LinhaDg
+            v-for="v in filtradas" :key="v.animal.id" :vaca="v"
+            @linha="atualizarVaca(v, $event)"
+            @animal="atualizarAnimal(v.animal.id, $event)"
+          />
+        </div>
+        <div v-if="busca && !filtradas.length" class="vazio">
+          Nenhuma vaca com o número {{ busca }} neste lote.
+          <NuxtLink :to="novaVaca" class="btn btn-contorno">Cadastrar vaca {{ busca }}</NuxtLink>
+        </div>
+        <div v-else-if="!carregando && !vacas.length" class="vazio">
+          Nenhuma vaca neste lote. Cadastre pelo botão "+ Vaca".
+        </div>
+        <div v-else class="suave">Mostrando {{ filtradas.length }} de {{ plural(vacas.length, 'vaca') }}</div>
+        </template>
       </div>
-      <div v-if="busca && !filtradas.length" class="vazio">
-        Nenhuma vaca com o número {{ busca }} neste lote.
-        <NuxtLink :to="novaVaca" class="btn btn-contorno">Cadastrar vaca {{ busca }}</NuxtLink>
-      </div>
-      <div v-else-if="!carregando && !vacas.length" class="vazio">
-        Nenhuma vaca neste lote. Cadastre pelo botão "+ Vaca".
-      </div>
-      <div v-else class="suave">Mostrando {{ filtradas.length }} de {{ plural(vacas.length, 'vaca') }}</div>
-    </div>
 
-    <template #rodape>
-      <div class="acoes">
-        <NuxtLink :to="novaVaca" class="btn btn-contorno">+ Vaca</NuxtLink>
-        <NuxtLink v-if="soDg" :to="`/atendimentos/${atendimento.id}/tabela-dg`" class="btn btn-primario">Ver tabela do DG</NuxtLink>
-        <NuxtLink v-else-if="contagem.vazia" :to="`/atendimentos/${atendimento.id}/protocolo`" class="btn btn-primario">
-          Iniciar IATF · {{ plural(contagem.vazia, 'apta', 'aptas') }}
-        </NuxtLink>
-        <button v-else type="button" class="btn btn-primario" disabled>Iniciar IATF · nenhuma apta</button>
-      </div>
-    </template>
-  </AppTela>
+      <template #rodape>
+        <div class="acoes">
+          <NuxtLink :to="novaVaca" class="btn btn-contorno">+ Vaca</NuxtLink>
+          <NuxtLink v-if="soDg" :to="`/atendimentos/${atendimento.id}/tabela-dg`" class="btn btn-primario">Ver tabela do DG</NuxtLink>
+          <NuxtLink v-else-if="contagem.vazia" :to="`/atendimentos/${atendimento.id}/protocolo`" class="btn btn-primario">
+            Iniciar IATF · {{ plural(contagem.vazia, 'apta', 'aptas') }}
+          </NuxtLink>
+          <button v-else type="button" class="btn btn-primario" disabled>Iniciar IATF · nenhuma apta</button>
+        </div>
+      </template>
+    </AppTela>
+  </div>
 </template>
 
 <style scoped>

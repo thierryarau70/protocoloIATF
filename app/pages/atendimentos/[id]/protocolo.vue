@@ -19,65 +19,68 @@ async function salvar() {
 </script>
 
 <template>
-  <AppTela
-    v-if="atendimento"
-    titulo="Protocolo IATF"
-    :sobrelinha="`${propriedade?.nome ?? ''} · ${lote?.nome ?? ''} · ${plural(contagem.vazia, 'vaca apta', 'vacas aptas')}`"
-    :voltar="{ to: `/atendimentos/${atendimento.id}/dg`, rotulo: 'DG' }"
-  >
-    <template #topo>
-      <EtapasFluxo :atual="4" />
-    </template>
+  <div>
+    <!-- Raiz sempre presente: com v-if na raiz a transição entre telas trava -->
+    <AppTela
+      v-if="atendimento"
+      titulo="Protocolo IATF"
+      :sobrelinha="`${propriedade?.nome ?? ''} · ${lote?.nome ?? ''} · ${plural(contagem.vazia, 'vaca apta', 'vacas aptas')}`"
+      :voltar="{ to: `/atendimentos/${atendimento.id}/dg`, rotulo: 'DG' }"
+    >
+      <template #topo>
+        <EtapasFluxo :atual="4" />
+      </template>
 
-    <form id="form-protocolo" class="pilha-curta" @submit.prevent="salvar">
-      <fieldset class="cartao gnrh">
-        <legend>Usa GnRH?</legend>
-        <span>GnRH no protocolo</span>
-        <GrupoEscolha v-model="form.gnrh" rotulo="Usa GnRH" :opcoes="[{ valor: true, rotulo: 'Sim' }, { valor: false, rotulo: 'Não', tom: 'neutro' }]" />
-      </fieldset>
+      <form id="form-protocolo" class="pilha-curta" @submit.prevent="salvar">
+        <fieldset class="cartao gnrh">
+          <legend>Usa GnRH?</legend>
+          <span>GnRH no protocolo</span>
+          <GrupoEscolha v-model="form.gnrh" rotulo="Usa GnRH" :opcoes="[{ valor: true, rotulo: 'Sim' }, { valor: false, rotulo: 'Não', tom: 'neutro' }]" />
+        </fieldset>
 
-      <div class="cartao etapa cartao-destaque">
-        <span class="dia dia-forte">D0</span>
-        <div class="texto">
-          <div class="nome">Ultrassom + implante</div>
-          <div class="suave">{{ formatarData(atendimento.dataD0) }}</div>
+        <div class="cartao etapa cartao-destaque">
+          <span class="dia dia-forte">D0</span>
+          <div class="texto">
+            <div class="nome">Ultrassom + implante</div>
+            <div class="suave">{{ formatarData(atendimento.dataD0) }}</div>
+          </div>
         </div>
-      </div>
-      <div class="cartao etapa">
-        <span class="dia">D8</span>
-        <div class="texto">
-          <div class="nome">Retirada do implante + hormônio</div>
-          <div class="suave">{{ dataCalculada(atendimento.dataD8) }} · pode ser D7 a D9</div>
+        <div class="cartao etapa">
+          <span class="dia">D8</span>
+          <div class="texto">
+            <div class="nome">Retirada do implante + hormônio</div>
+            <div class="suave">{{ dataCalculada(atendimento.dataD8) }} · pode ser D7 a D9</div>
+          </div>
+          <div class="campo hora">
+            <label for="h8">Hora início</label>
+            <input id="h8" v-model="form.horaD8" type="time" class="entrada entrada-compacta">
+          </div>
         </div>
-        <div class="campo hora">
-          <label for="h8">Hora início</label>
-          <input id="h8" v-model="form.horaD8" type="time" class="entrada entrada-compacta">
+        <div class="cartao etapa">
+          <span class="dia">D10</span>
+          <div class="texto">
+            <div class="nome">Inseminação</div>
+            <div class="suave">{{ dataCalculada(atendimento.dataD10) }}</div>
+          </div>
+          <div class="campo hora">
+            <label for="h10">Hora início</label>
+            <input id="h10" v-model="form.horaD10" type="time" class="entrada entrada-compacta">
+          </div>
         </div>
-      </div>
-      <div class="cartao etapa">
-        <span class="dia">D10</span>
-        <div class="texto">
-          <div class="nome">Inseminação</div>
-          <div class="suave">{{ dataCalculada(atendimento.dataD10) }}</div>
+        <div class="cartao etapa futura">
+          <span class="dia dia-neutro">D45</span>
+          <div class="texto">
+            <div class="nome">DG final</div>
+            <div class="suave">{{ dataCalculada(atendimento.dataD45) }} · confirma quem emprenhou</div>
+          </div>
         </div>
-        <div class="campo hora">
-          <label for="h10">Hora início</label>
-          <input id="h10" v-model="form.horaD10" type="time" class="entrada entrada-compacta">
-        </div>
-      </div>
-      <div class="cartao etapa futura">
-        <span class="dia dia-neutro">D45</span>
-        <div class="texto">
-          <div class="nome">DG final</div>
-          <div class="suave">{{ dataCalculada(atendimento.dataD45) }} · confirma quem emprenhou</div>
-        </div>
-      </div>
-    </form>
+      </form>
 
-    <template #rodape>
-      <button type="submit" form="form-protocolo" class="btn btn-primario btn-bloco">Salvar protocolo</button>
-    </template>
-  </AppTela>
+      <template #rodape>
+        <button type="submit" form="form-protocolo" class="btn btn-primario btn-bloco">Salvar protocolo</button>
+      </template>
+    </AppTela>
+  </div>
 </template>
 
 <style scoped>

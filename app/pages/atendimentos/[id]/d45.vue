@@ -15,34 +15,37 @@ async function finalizar() {
 </script>
 
 <template>
-  <AppTela
-    v-if="atendimento"
-    titulo="D45 · DG final"
-    :sobrelinha="`${propriedade?.nome ?? ''} · ${lote?.nome ?? ''} · ${formatarData(atendimento.dataD45)}`"
-    :voltar="{ to: `/atendimentos/${atendimento.id}`, rotulo: lote?.nome ?? 'Lote' }"
-  >
-    <div class="pilha">
-      <div class="estatisticas">
-        <Estatistica :valor="formatarTaxa(atendimento.resultado?.taxaPrenhez)" rotulo="Taxa de prenhez" tom="forte" />
-        <Estatistica :valor="prenhas" rotulo="Prenhas" tom="verde" />
-        <Estatistica :valor="vazias" rotulo="Vazias" tom="ambar" />
-      </div>
-      <p class="dica">Inseminadas no D10: confirme quem emprenhou. Animais perdidos: {{ atendimento.animaisPerdidos }}. A taxa é calculada pelo servidor ao sincronizar.</p>
-      <div class="lista">
-        <div v-for="v in inseminadas" :key="v.animal.id" class="vaca">
-          <span class="numero">Vaca {{ v.animal.numero }}</span>
-          <GrupoEscolha
-            :model-value="v.linha!.resultadoD45" :opcoes="opcoes" :rotulo="`DG final da vaca ${v.animal.numero}`" desmarcavel
-            @update:model-value="atualizarVaca(v, { resultadoD45: $event })"
-          />
+  <div>
+    <!-- Raiz sempre presente: com v-if na raiz a transição entre telas trava -->
+    <AppTela
+      v-if="atendimento"
+      titulo="D45 · DG final"
+      :sobrelinha="`${propriedade?.nome ?? ''} · ${lote?.nome ?? ''} · ${formatarData(atendimento.dataD45)}`"
+      :voltar="{ to: `/atendimentos/${atendimento.id}`, rotulo: lote?.nome ?? 'Lote' }"
+    >
+      <div class="pilha">
+        <div class="estatisticas">
+          <Estatistica :valor="formatarTaxa(atendimento.resultado?.taxaPrenhez)" rotulo="Taxa de prenhez" tom="forte" />
+          <Estatistica :valor="prenhas" rotulo="Prenhas" tom="verde" />
+          <Estatistica :valor="vazias" rotulo="Vazias" tom="ambar" />
         </div>
+        <p class="dica">Inseminadas no D10: confirme quem emprenhou. Animais perdidos: {{ atendimento.animaisPerdidos }}. A taxa é calculada pelo servidor ao sincronizar.</p>
+        <div class="lista">
+          <div v-for="v in inseminadas" :key="v.animal.id" class="vaca">
+            <span class="numero">Vaca {{ v.animal.numero }}</span>
+            <GrupoEscolha
+              :model-value="v.linha!.resultadoD45" :opcoes="opcoes" :rotulo="`DG final da vaca ${v.animal.numero}`" desmarcavel
+              @update:model-value="atualizarVaca(v, { resultadoD45: $event })"
+            />
+          </div>
+        </div>
+        <div v-if="!inseminadas.length" class="vazio">Nenhuma vaca inseminada neste protocolo.</div>
       </div>
-      <div v-if="!inseminadas.length" class="vazio">Nenhuma vaca inseminada neste protocolo.</div>
-    </div>
-    <template #rodape>
-      <button type="button" class="btn btn-primario btn-bloco" @click="finalizar">Finalizar lote</button>
-    </template>
-  </AppTela>
+      <template #rodape>
+        <button type="button" class="btn btn-primario btn-bloco" @click="finalizar">Finalizar lote</button>
+      </template>
+    </AppTela>
+  </div>
 </template>
 
 <style scoped>

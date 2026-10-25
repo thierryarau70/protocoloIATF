@@ -60,80 +60,83 @@ function imprimir() {
 </script>
 
 <template>
-  <div v-if="atendimento" class="relatorio-pagina">
-    <nav class="barra no-print" aria-label="Ações do relatório">
-      <NuxtLink :to="`/atendimentos/${atendimento.id}`" class="voltar">
-        <Icone nome="voltar" />
-        Voltar
-      </NuxtLink>
-      <div class="acoes">
-        <button type="button" class="btn btn-contorno" @click="baixarPlanilha">Baixar planilha</button>
-        <button type="button" class="btn btn-primario" @click="imprimir">Imprimir / salvar PDF</button>
-      </div>
-    </nav>
+  <div>
+    <!-- Raiz sempre presente: com v-if na raiz a transição entre telas trava -->
+    <div v-if="atendimento" class="relatorio-pagina">
+      <nav class="barra no-print" aria-label="Ações do relatório">
+        <NuxtLink :to="`/atendimentos/${atendimento.id}`" class="voltar">
+          <Icone nome="voltar" />
+          Voltar
+        </NuxtLink>
+        <div class="acoes">
+          <button type="button" class="btn btn-contorno" @click="baixarPlanilha">Baixar planilha</button>
+          <button type="button" class="btn btn-primario" @click="imprimir">Imprimir / salvar PDF</button>
+        </div>
+      </nav>
 
-    <article class="folha">
-      <header class="cabecalho">
-        <div class="vet">
-          <img v-if="perfil?.logoUrl" :src="perfil.logoUrl" alt="" class="logo">
-          <div>
-            <strong class="vet-nome">{{ perfil?.nome ?? '' }}</strong>
-            <div class="suave">
-              {{ [perfil?.crmv && `CRMV ${perfil.crmv}`, perfil?.empresa, perfil?.local, perfil?.contato].filter(Boolean).join(' · ') }}
+      <article class="folha">
+        <header class="cabecalho">
+          <div class="vet">
+            <img v-if="perfil?.logoUrl" :src="perfil.logoUrl" alt="" class="logo">
+            <div>
+              <strong class="vet-nome">{{ perfil?.nome ?? '' }}</strong>
+              <div class="suave">
+                {{ [perfil?.crmv && `CRMV ${perfil.crmv}`, perfil?.empresa, perfil?.local, perfil?.contato].filter(Boolean).join(' · ') }}
+              </div>
             </div>
           </div>
-        </div>
-        <div class="titulo-bloco">
-          <h1>{{ titulo }}</h1>
-          <div class="suave">Emitido em {{ emitido }}</div>
-        </div>
-      </header>
+          <div class="titulo-bloco">
+            <h1>{{ titulo }}</h1>
+            <div class="suave">Emitido em {{ emitido }}</div>
+          </div>
+        </header>
 
-      <dl class="dados">
-        <div v-for="[rotulo, valor] in dados" :key="rotulo"><dt>{{ rotulo }}</dt><dd>{{ valor }}</dd></div>
-      </dl>
-
-      <section v-if="r" class="secao">
-        <h2>Resultado</h2>
-        <dl class="numeros">
-          <div v-for="[rotulo, valor] in numeros" :key="rotulo"><dd :class="{ texto: !/^[d,.%]+$/.test(valor) }">{{ valor }}</dd><dt>{{ rotulo }}</dt></div>
+        <dl class="dados">
+          <div v-for="[rotulo, valor] in dados" :key="rotulo"><dt>{{ rotulo }}</dt><dd>{{ valor }}</dd></div>
         </dl>
-        <p v-if="!soDg && r.prenhasD45 && atendimento.previsaoParto" class="parto">
-          Previsão de parto das prenhas do IATF: <strong>{{ formatarData(atendimento.previsaoParto) }}</strong>
-        </p>
-      </section>
-      <p v-else class="aviso no-print">O resultado aparece depois que o aparelho sincronizar com o servidor.</p>
 
-      <section v-if="!soDg && semenComResultado.length" class="secao">
-        <h2>Prenhez por sêmen</h2>
-        <table class="tabela-rel">
-          <thead><tr><th>Sêmen</th><th>Inseminadas</th><th>Prenhas</th><th>Taxa</th></tr></thead>
-          <tbody>
-            <tr v-for="s in semenComResultado" :key="s.rotulo">
-              <td>{{ s.rotulo }}</td><td>{{ s.inseminadas }}</td><td>{{ s.prenhas }}</td><td>{{ formatarTaxa(s.taxaPrenhez) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
+        <section v-if="r" class="secao">
+          <h2>Resultado</h2>
+          <dl class="numeros">
+            <div v-for="[rotulo, valor] in numeros" :key="rotulo"><dd :class="{ texto: !/^[d,.%]+$/.test(valor) }">{{ valor }}</dd><dt>{{ rotulo }}</dt></div>
+          </dl>
+          <p v-if="!soDg && r.prenhasD45 && atendimento.previsaoParto" class="parto">
+            Previsão de parto das prenhas do IATF: <strong>{{ formatarData(atendimento.previsaoParto) }}</strong>
+          </p>
+        </section>
+        <p v-else class="aviso no-print">O resultado aparece depois que o aparelho sincronizar com o servidor.</p>
 
-      <section class="secao">
-        <h2>Animais ({{ tabela.linhas.length }})</h2>
-        <table v-if="tabela.linhas.length" class="tabela-rel tabela-vacas">
-          <thead><tr><th v-for="c in tabela.cabecalho" :key="c">{{ c }}</th></tr></thead>
-          <tbody>
-            <tr v-for="linha in tabela.linhas" :key="linha[0]">
-              <td v-for="(celula, i) in linha" :key="i">{{ celula || '—' }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <p v-else class="suave">Nenhuma vaca avaliada ainda.</p>
-      </section>
+        <section v-if="!soDg && semenComResultado.length" class="secao">
+          <h2>Prenhez por sêmen</h2>
+          <table class="tabela-rel">
+            <thead><tr><th>Sêmen</th><th>Inseminadas</th><th>Prenhas</th><th>Taxa</th></tr></thead>
+            <tbody>
+              <tr v-for="s in semenComResultado" :key="s.rotulo">
+                <td>{{ s.rotulo }}</td><td>{{ s.inseminadas }}</td><td>{{ s.prenhas }}</td><td>{{ formatarTaxa(s.taxaPrenhez) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
 
-      <footer class="assinatura">
-        <div class="linha-assinatura" />
-        <div>{{ perfil?.nome ?? 'Médico(a) veterinário(a)' }}<template v-if="perfil?.crmv"> · CRMV {{ perfil.crmv }}</template></div>
-      </footer>
-    </article>
+        <section class="secao">
+          <h2>Animais ({{ tabela.linhas.length }})</h2>
+          <table v-if="tabela.linhas.length" class="tabela-rel tabela-vacas">
+            <thead><tr><th v-for="c in tabela.cabecalho" :key="c">{{ c }}</th></tr></thead>
+            <tbody>
+              <tr v-for="linha in tabela.linhas" :key="linha[0]">
+                <td v-for="(celula, i) in linha" :key="i">{{ celula || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p v-else class="suave">Nenhuma vaca avaliada ainda.</p>
+        </section>
+
+        <footer class="assinatura">
+          <div class="linha-assinatura" />
+          <div>{{ perfil?.nome ?? 'Médico(a) veterinário(a)' }}<template v-if="perfil?.crmv"> · CRMV {{ perfil.crmv }}</template></div>
+        </footer>
+      </article>
+    </div>
   </div>
 </template>
 

@@ -11,40 +11,43 @@ const cadastrarSemen = computed(() => `/propriedades/${propriedade.value?.id}/se
 </script>
 
 <template>
-  <AppTela
-    v-if="atendimento"
-    titulo="Planilha IATF"
-    :sobrelinha="`${propriedade?.nome ?? ''} · ${lote?.nome ?? ''} · ${plural(emProtocolo.length, 'vaca apta', 'vacas aptas')}`"
-    :voltar="{ to: `/atendimentos/${atendimento.id}`, rotulo: lote?.nome ?? 'Lote' }"
-    larga
-  >
-    <div class="pilha">
-      <div class="campo">
-        <label for="inseminador">Inseminador</label>
-        <EntradaAoSair id="inseminador" placeholder="Nome do inseminador" :valor="atendimento.inseminador ?? ''" @salvar="atualizar({ inseminador: $event })" />
+  <div>
+    <!-- Raiz sempre presente: com v-if na raiz a transição entre telas trava -->
+    <AppTela
+      v-if="atendimento"
+      titulo="Planilha IATF"
+      :sobrelinha="`${propriedade?.nome ?? ''} · ${lote?.nome ?? ''} · ${plural(emProtocolo.length, 'vaca apta', 'vacas aptas')}`"
+      :voltar="{ to: `/atendimentos/${atendimento.id}`, rotulo: lote?.nome ?? 'Lote' }"
+      larga
+    >
+      <div class="pilha">
+        <div class="campo">
+          <label for="inseminador">Inseminador</label>
+          <EntradaAoSair id="inseminador" placeholder="Nome do inseminador" :valor="atendimento.inseminador ?? ''" @salvar="atualizar({ inseminador: $event })" />
+        </div>
+        <p v-if="aguardandoServidor" class="cartao-suave">
+          Algumas vacas vazias ainda não foram confirmadas pelo servidor. Elas entram na planilha assim que o aparelho sincronizar.
+        </p>
+        <div class="grade-cartoes">
+          <LinhaPlanilha v-for="v in emProtocolo" :key="v.animal.id" :vaca="v" :semens="semens" :cadastrar-semen="cadastrarSemen" @linha="atualizarVaca(v, $event)" />
+        </div>
+        <div v-if="!emProtocolo.length && !aguardandoServidor" class="vazio">Nenhuma vaca no protocolo.</div>
+        <NuxtLink v-if="semens.length" :to="cadastrarSemen" class="btn btn-tracejado btn-bloco">+ Cadastrar outro sêmen</NuxtLink>
       </div>
-      <p v-if="aguardandoServidor" class="cartao-suave">
-        Algumas vacas vazias ainda não foram confirmadas pelo servidor. Elas entram na planilha assim que o aparelho sincronizar.
-      </p>
-      <div class="grade-cartoes">
-        <LinhaPlanilha v-for="v in emProtocolo" :key="v.animal.id" :vaca="v" :semens="semens" :cadastrar-semen="cadastrarSemen" @linha="atualizarVaca(v, $event)" />
-      </div>
-      <div v-if="!emProtocolo.length && !aguardandoServidor" class="vazio">Nenhuma vaca no protocolo.</div>
-      <NuxtLink v-if="semens.length" :to="cadastrarSemen" class="btn btn-tracejado btn-bloco">+ Cadastrar outro sêmen</NuxtLink>
-    </div>
-    <template #rodape>
-      <div class="rodape">
-        <span class="selo tom-verde">{{ plural(emProtocolo.length, 'animal', 'animais') }}</span>
-        <label class="perdidos">
-          Perdidos
-          <EntradaAoSair
-            type="number" min="0" inputmode="numeric" class="entrada-compacta" :valor="atendimento.animaisPerdidos"
-            @salvar="atualizar({ animaisPerdidos: Math.max(0, Number($event) || 0) })" />
-        </label>
-        <NuxtLink :to="`/atendimentos/${atendimento.id}`" class="btn btn-primario concluir">Concluir</NuxtLink>
-      </div>
-    </template>
-  </AppTela>
+      <template #rodape>
+        <div class="rodape">
+          <span class="selo tom-verde">{{ plural(emProtocolo.length, 'animal', 'animais') }}</span>
+          <label class="perdidos">
+            Perdidos
+            <EntradaAoSair
+              type="number" min="0" inputmode="numeric" class="entrada-compacta" :valor="atendimento.animaisPerdidos"
+              @salvar="atualizar({ animaisPerdidos: Math.max(0, Number($event) || 0) })" />
+          </label>
+          <NuxtLink :to="`/atendimentos/${atendimento.id}`" class="btn btn-primario concluir">Concluir</NuxtLink>
+        </div>
+      </template>
+    </AppTela>
+  </div>
 </template>
 
 <style scoped>
