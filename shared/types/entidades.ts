@@ -1,0 +1,80 @@
+import type { z } from 'zod'
+import type { esquemaAnimal, esquemaAtendimento, esquemaAtendimentoAnimal, esquemaLote, esquemaPerfil, esquemaPropriedade, esquemaSemen } from '../esquemas'
+
+export type SituacaoDg = 'pendente' | 'prenha' | 'vazia' | 'descarte' | 'refugo'
+
+export interface ResumoPropriedade {
+  animais: number
+  iatf: number
+  taxaPrenhez: number | null
+}
+
+export interface PrenhezPorSemen {
+  rotulo: string
+  /** "outros" soma os sêmens além do limite do gráfico; "nao_informado", inseminações sem sêmen */
+  tipo: 'semen' | 'outros' | 'nao_informado'
+  inseminadas: number
+  prenhas: number
+  taxaPrenhez: number | null
+}
+
+export interface ResultadoAtendimento {
+  dg: Record<SituacaoDg, number>
+  emProtocolo: number
+  inseminadas: number
+  naoInseminadas: number
+  prenhasD45: number
+  vaziasD45: number
+  taxaInseminacao: number | null
+  taxaPrenhez: number | null
+  semen: PrenhezPorSemen[]
+}
+
+export type Propriedade = z.infer<typeof esquemaPropriedade> & { resumo?: ResumoPropriedade }
+export type Lote = z.infer<typeof esquemaLote>
+export type Semen = z.infer<typeof esquemaSemen>
+export type Animal = z.infer<typeof esquemaAnimal>
+// Campos calculados no servidor chegam pela sincronização; ausentes enquanto o registro só existe no aparelho
+export type Atendimento = z.infer<typeof esquemaAtendimento> & {
+  dataD8?: string
+  dataD10?: string
+  dataD45?: string
+  previsaoParto?: string
+  resultado?: ResultadoAtendimento
+}
+export type AtendimentoAnimal = z.infer<typeof esquemaAtendimentoAnimal> & { emProtocolo?: boolean }
+
+export interface Snapshot {
+  propriedades: Propriedade[]
+  lotes: Lote[]
+  semens: Semen[]
+  animais: Animal[]
+  atendimentos: Atendimento[]
+  atendimentoAnimais: AtendimentoAnimal[]
+}
+
+export interface ResultadoOperacao {
+  id: string
+  ok: boolean
+  erro?: string
+}
+
+export type DadosPerfil = z.infer<typeof esquemaPerfil>
+
+export interface ResumoVeterinario {
+  propriedades: number
+  iatfPorAno: { ano: number, total: number }[]
+  taxaPrenhez: number | null
+  semen: PrenhezPorSemen[]
+}
+
+export interface Perfil extends DadosPerfil {
+  email: string
+  resumo: ResumoVeterinario
+}
+
+export interface Usuario {
+  id: string
+  nome: string
+  email: string
+}
