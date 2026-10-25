@@ -20,10 +20,21 @@ onMounted(() => {
   const back = (window.history.state as { back?: unknown } | null)?.back
   // Uma tela aberta a partir desta (ex.: a planilha, no atendimento; o DG, no lote) não é "de onde
   // veio": voltar para ela prenderia a pessoa indo e vindo entre as duas
+  const voltaParaCa = (url: string) => {
+    let u: string | null = url
+    for (let i = 0; i < 20 && u; i++) {
+      u = lerOrigem(u)
+      if (u === aqui) return true
+    }
+    return false
+  }
   const valida = (url: unknown): url is string =>
-    typeof url === 'string' && url !== aqui && !ehTelaFilha(url, aqui) && lerOrigem(url) !== aqui
-  const origem = valida(back) ? back : lerOrigem(aqui)
-  anterior.value = valida(origem) ? origem : null
+    typeof url === 'string' && url !== aqui && !ehTelaFilha(url, aqui) && !voltaParaCa(url)
+  // As telas do menu (Lotes, IATF, Estoque…) voltam sempre para o Início, como as abas de um app
+  if (props.voltar?.to === '/') return
+  // Primeiro a tela de onde esta foi aberta; o histórico do navegador só depois: depois de uma tela
+  // trocada (salvar, concluir) ele aponta para telas que não são mais o caminho de volta
+  anterior.value = [lerOrigem(aqui), back].find(valida) ?? null
 })
 const caminho = (url: string) => url.split(/[?#]/)[0]
 const rotulo = computed(() => {

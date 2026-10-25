@@ -10,6 +10,7 @@ export default defineNuxtPlugin(() => {
     guardarPosicao(para.fullPath)
     if (!de.matched.length) return
     const back = (window.history.state as { back?: unknown } | null)?.back
-    if (back === de.fullPath) guardarOrigem(para.fullPath, de.fullPath)
+    // Indo de uma tela de dentro para a de fora (planilha → atendimento), a de dentro não é a origem
+    if (back === de.fullPath && !ehTelaFilha(de.fullPath, para.fullPath)) guardarOrigem(para.fullPath, de.fullPath)
   })
 })
