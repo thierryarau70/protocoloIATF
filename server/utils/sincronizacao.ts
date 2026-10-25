@@ -1,5 +1,6 @@
+import type { z } from 'zod'
 import { and, eq, inArray, sql } from 'drizzle-orm'
-import { esquemaOperacao, esquemas } from '#shared/esquemas'
+import { descreverRegistro, errosDoZod, esquemaOperacao, esquemas } from '#shared/esquemas'
 import type { ResultadoOperacao, Snapshot } from '#shared/types/entidades'
 import { calcularDatas, calcularResultado, normalizarLinhaAnimal, previsaoPartoIatf, taxa, validarLinhaAnimal } from './regras'
 import { nomearSemen } from './resumo'
@@ -113,7 +114,7 @@ async function salvarAtendimentoAnimal(db: Db, vetId: string, dados: unknown) {
 async function salvarInsumo(db: Db, vetId: string, dados: unknown) {
   const i = esquemas.insumo.parse(dados)
   const [existente] = await db.select({ veterinarioId: insumo.veterinarioId }).from(insumo).where(eq(insumo.id, i.id))
-  if (existente && existente.veterinarioId !== vetId) throw new ErroOperacao('Item de estoque não encontrado.')
+  if (existente && existente.veterinarioId !== vetId) throw new ErroOperacao('não encontrado nesta conta.')
   await db.insert(insumo).values({ ...i, veterinarioId: vetId })
     .onConflictDoUpdate({ target: insumo.id, set: { ...i, atualizadoEm: agora } })
 }
@@ -126,6 +127,17 @@ const salvar = {
   atendimento: salvarAtendimento,
   atendimentoAnimal: salvarAtendimentoAnimal,
   insumo: salvarInsumo,
+}
+
+/** Por que a operação foi recusada; null para falhas do servidor (banco fora do ar…), que voltam para a fila */
+function motivoDaRecusa(op: Operacao, e: unknown): string | null {
+  if (e instanceof ErroOperacao) return e.message
+  if (e instanceof Error && e.name === 'ZodError') return Object.values(errosDoZod(e as z.ZodError))[0] ?? 'dados inválidos.'
+  // Violação de integridade (ex.: a mesma vaca duas vezes no atendimento): recusa só esta operação
+  const codigo = String((e as { code?: unknown })?.code ?? (e as { cause?: { code?: unknown } })?.cause?.code ?? '')
+  if (codigo === '23505' && op.entidade === 'atendimentoAnimal') return 'esta vaca já está no atendimento (registro em conflito).'
+  if (codigo.startsWith('23')) return 'registro em conflito com outro já salvo.'
+  return null
 }
 
 /**
@@ -141,12 +153,9 @@ export async function aplicarOperacoes(vetId: string, operacoes: Operacao[]): Pr
       resultados.push({ id: op.id, ok: true })
     }
     catch (e) {
-      if (e instanceof ErroOperacao) resultados.push({ id: op.id, ok: false, erro: e.message })
-      else if (e instanceof Error && e.name === 'ZodError') resultados.push({ id: op.id, ok: false, erro: 'Dados inválidos.' })
-      // Violação de integridade (ex.: a mesma vaca duas vezes no atendimento): recusa só esta operação
-      else if (String((e as { code?: unknown })?.code ?? (e as { cause?: { code?: unknown } })?.cause?.code ?? '').startsWith('23')) {
-        resultados.push({ id: op.id, ok: false, erro: 'Registro em conflito com outro já salvo.' })
-      }
+      // A pessoa vê qual registro não foi salvo e por quê (ex.: "Vaca 202: A data de nascimento precisa ser anterior a hoje.")
+      const motivo = motivoDaRecusa(op, e)
+      if (motivo) resultados.push({ id: op.id, ok: false, erro: `${descreverRegistro(op.entidade, op.dados)}: ${motivo}` })
       else throw e
     }
   }

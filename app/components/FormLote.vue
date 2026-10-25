@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { validarCampos } from '#shared/esquemas'
+
 const props = defineProps<{ id?: string, propriedadeId?: string }>()
 
 const { lote } = useLote(() => props.id ?? '')
@@ -10,8 +12,17 @@ watch(() => lote.value?.id, () => {
 }, { immediate: true })
 
 const route = useRoute()
+/** Problemas encontrados antes de salvar (mesmas regras do servidor) */
+const erros = ref<string[]>([])
+const checar = (dados: { id?: string }, extras: string[] = []) => {
+  erros.value = [...extras, ...Object.values(validarCampos('lote', { ...dados, id: dados.id ?? novoId() }))]
+  return !erros.value.length
+}
+
 async function salvar() {
-  const salvo = await salvarLote({ id: props.id, ...form })
+  const dados = { id: props.id, ...form }
+  if (!checar(dados)) return
+  const salvo = await salvarLote(dados)
   // Vindo do fluxo do DG, volta para escolher o lote recém-criado
   const destino = route.query.voltar === 'dg' ? `/dg/${salvo.propriedadeId}` : `/lotes/${salvo.id}`
   await concluirPara(destino)
@@ -23,7 +34,7 @@ async function salvar() {
     :titulo="id ? 'Editar lote' : 'Novo lote'"
     :voltar="id ? { to: `/lotes/${id}`, rotulo: 'Lote' } : { to: propriedadeId ? `/propriedades/${propriedadeId}` : '/lotes', rotulo: 'Voltar' }"
   >
-    <form id="form-lote" class="pilha" @submit.prevent="salvar">
+    <form id="form-lote" class="pilha" novalidate @submit.prevent="salvar">
       <div v-if="!propriedadeId && !id" class="campo">
         <label for="propriedade">Propriedade</label>
         <select id="propriedade" v-model="form.propriedadeId" class="entrada" required>
@@ -40,6 +51,9 @@ async function salvar() {
         <input id="local" v-model="form.localPrincipal" class="entrada" placeholder="Pasto, retiro, curral">
         <span class="dica">Visível só para o proprietário.</span>
       </div>
+      <ul v-if="erros.length" class="erro lista-erros" role="alert">
+        <li v-for="e in erros" :key="e">{{ e }}</li>
+      </ul>
     </form>
     <template #rodape>
       <button type="submit" form="form-lote" class="btn btn-primario btn-bloco">Salvar lote</button>

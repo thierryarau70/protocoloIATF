@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { validarCampos } from '#shared/esquemas'
+
 const props = defineProps<{ propriedadeId: string, id?: string }>()
 
 const route = useRoute()
@@ -29,21 +31,35 @@ const voltar = computed(() => {
   return v.startsWith('/') && !v.startsWith('//') ? v : `/propriedades/${props.propriedadeId}`
 })
 
+/** Problemas encontrados antes de salvar (mesmas regras do servidor) */
+const erros = ref<string[]>([])
+const checar = (dados: { id?: string }, extras: string[] = []) => {
+  erros.value = [...extras, ...Object.values(validarCampos('semen', { ...dados, id: dados.id ?? novoId() }))]
+  return !erros.value.length
+}
+
 async function salvar() {
   const doses = inteiroOuNulo(form.estoqueDoses)
-  await salvarSemen({
+  const dados = {
     id: props.id, propriedadeId: props.propriedadeId, nome: form.nome, raca: form.raca, partida: form.partida,
     estoqueDoses: doses,
     estoqueEm: doses === null ? null : form.estoqueEm || hoje(),
     estoqueMinimo: doses === null ? null : inteiroOuNulo(form.estoqueMinimo),
-  })
+  }
+  // Texto num campo de número viraria "vazio" sem avisar
+  const extras = [
+    String(form.estoqueDoses ?? '').trim() && doses === null ? 'Doses em estoque: use um número inteiro (ex.: 30).' : '',
+    String(form.estoqueMinimo ?? '').trim() && inteiroOuNulo(form.estoqueMinimo) === null ? 'Estoque mínimo: use um número inteiro (ex.: 5).' : '',
+  ].filter(Boolean)
+  if (!checar(dados, extras)) return
+  await salvarSemen(dados)
   await concluirPara(voltar.value)
 }
 </script>
 
 <template>
   <AppTela :titulo="id ? 'Editar sêmen' : 'Novo sêmen'" :sobrelinha="propriedade?.nome" :voltar="{ to: voltar, rotulo: 'Voltar' }">
-    <form id="form-semen" class="pilha" @submit.prevent="salvar">
+    <form id="form-semen" class="pilha" novalidate @submit.prevent="salvar">
       <div class="campo">
         <label for="nome">Touro</label>
         <input id="nome" v-model="form.nome" class="entrada" placeholder="Nome do touro" autocapitalize="words" autocomplete="off" required>
@@ -77,6 +93,9 @@ async function salvar() {
         </div>
         <p class="dica">Cada inseminação com este sêmen na planilha desconta uma dose. Ao contar de novo, troque as doses: a data vira hoje.</p>
       </fieldset>
+      <ul v-if="erros.length" class="erro lista-erros" role="alert">
+        <li v-for="e in erros" :key="e">{{ e }}</li>
+      </ul>
     </form>
     <template #rodape>
       <button type="submit" form="form-semen" class="btn btn-primario btn-bloco">Salvar sêmen</button>

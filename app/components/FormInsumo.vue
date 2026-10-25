@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { validarCampos } from '#shared/esquemas'
+
 const props = defineProps<{ id?: string }>()
 
 const insumo = useInsumo(() => props.id ?? '')
@@ -29,19 +31,31 @@ function sugerir(s: typeof insumosComuns[number]) {
   Object.assign(form, { nome: s.nome, unidade: s.unidade, usoPorVaca: String(s.usoPorVaca) })
 }
 
+/** Problemas encontrados antes de salvar (mesmas regras do servidor) */
+const erros = ref<string[]>([])
+const checar = (dados: { id?: string }, extras: string[] = []) => {
+  erros.value = [...extras, ...Object.values(validarCampos('insumo', { ...dados, id: dados.id ?? novoId() }))]
+  return !erros.value.length
+}
+
 async function salvar() {
-  await salvarInsumo({
+  const dados = {
     id: props.id, nome: form.nome, unidade: form.unidade,
     saldo: numero(form.saldo) ?? 0, saldoEm: form.saldoEm || hoje(),
     usoPorVaca: numero(form.usoPorVaca), minimo: numero(form.minimo),
-  })
+  }
+  // Texto num campo de número viraria zero ou vazio sem avisar
+  const semNumero = ([valor, rotulo]: [string, string]) => (String(valor).trim() && numero(valor) === null ? `${rotulo}: use um número maior ou igual a zero (ex.: 2 ou 2,5).` : '')
+  const extras = ([[form.saldo, 'Quantidade em estoque'], [form.usoPorVaca, 'Uso por vaca'], [form.minimo, 'Estoque mínimo']] as [string, string][]).map(semNumero).filter(Boolean)
+  if (!checar(dados, extras)) return
+  await salvarInsumo(dados)
   await concluirPara('/estoque')
 }
 </script>
 
 <template>
   <AppTela :titulo="id ? 'Editar item' : 'Novo item de estoque'" sobrelinha="Estoque" :voltar="{ to: '/estoque', rotulo: 'Estoque' }">
-    <form id="form-insumo" class="pilha" @submit.prevent="salvar">
+    <form id="form-insumo" class="pilha" novalidate @submit.prevent="salvar">
       <div v-if="!id" class="pilha-curta">
         <span class="rotulo">Sugestões</span>
         <div class="sugestoes">
@@ -86,6 +100,9 @@ async function salvar() {
         Cada vaca que entra no protocolo IATF (vazia apta no DG) desconta o gasto por vaca, a partir da data da contagem.
         Deixe o gasto em branco para itens que você não quer descontar automaticamente.
       </p>
+      <ul v-if="erros.length" class="erro lista-erros" role="alert">
+        <li v-for="e in erros" :key="e">{{ e }}</li>
+      </ul>
     </form>
     <template #rodape>
       <button type="submit" form="form-insumo" class="btn btn-primario btn-bloco">Salvar</button>

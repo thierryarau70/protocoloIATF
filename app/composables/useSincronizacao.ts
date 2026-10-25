@@ -6,6 +6,8 @@ const online = ref(true)
 const sincronizando = ref(false)
 const ultimaSincronizacao = ref<Date | null>(null)
 const rejeitados = ref<string[]>([])
+/** Por que a última tentativa de sincronizar falhou (sem conexão, sessão expirada, servidor fora); vazio quando deu certo */
+const falha = ref('')
 const { dados: pendentes } = useConsultaGlobal()
 
 let tentativas = 0
@@ -84,12 +86,22 @@ async function sincronizar(): Promise<void> {
     // Algo pode ter sido registrado durante o envio
     if (await bancoLocal.fila.count()) await enviarFila()
     tentativas = 0
+    falha.value = ''
     ultimaSincronizacao.value = new Date()
   }
   catch (e) {
-    if ((e as { statusCode?: number })?.statusCode === 401) return
+    const status = (e as { statusCode?: number })?.statusCode
+    if (status === 401) {
+      falha.value = 'Sua sessão expirou. Entre de novo para enviar o que está salvo neste aparelho.'
+      return
+    }
     tentativas++
-    agendar(Math.min(60_000, 5_000 * 2 ** (tentativas - 1)))
+    const espera = Math.min(60_000, 5_000 * 2 ** (tentativas - 1))
+    const quando = `Tentando de novo em ${Math.round(espera / 1000)} s; nada se perde, está salvo no aparelho.`
+    falha.value = eErroDeRede(e)
+      ? `Sem conexão com o servidor. ${quando}`
+      : `O servidor não conseguiu receber os dados agora${status ? ` (erro ${status})` : ''}. ${quando}`
+    agendar(espera)
   }
   finally {
     sincronizando.value = false
@@ -119,6 +131,7 @@ export function useSincronizacao() {
     pendentes,
     ultimaSincronizacao: readonly(ultimaSincronizacao),
     rejeitados,
+    falha: readonly(falha),
     registrar,
     sincronizar,
     iniciar,

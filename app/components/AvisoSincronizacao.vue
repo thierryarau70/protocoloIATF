@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { online, pendentes, rejeitados, limparRejeitados } = useSincronizacao()
+const { online, pendentes, rejeitados, falha, limparRejeitados } = useSincronizacao()
+const sessaoExpirou = computed(() => falha.value.startsWith('Sua sessão expirou'))
 const aviso = useAvisoApp()
 // Avisa uma vez quando o app termina de ser guardado para abrir sem internet
 const { prontoAgora } = useProntoSemInternet()
@@ -44,8 +45,11 @@ onBeforeUnmount(() => clearTimeout(temporizador))
     <div v-if="rejeitados.length" class="faixa faixa-erro">
       <Icone nome="alerta" :tamanho="18" />
       <div class="texto">
-        <strong>{{ plural(rejeitados.length, 'registro recusado', 'registros recusados') }} pelo servidor:</strong>
-        {{ [...new Set(rejeitados)].join(' ') }}
+        <strong>{{ rejeitados.length === 1 ? 'Não foi salvo' : `${rejeitados.length} registros não foram salvos` }}:</strong>
+        <ul class="motivos">
+          <li v-for="motivo in [...new Set(rejeitados)]" :key="motivo">{{ motivo }}</li>
+        </ul>
+        <span class="dica">Corrija e salve de novo.</span>
       </div>
       <button type="button" class="fechar" aria-label="Fechar aviso" @click="limparRejeitados">
         <Icone nome="fechar" :tamanho="18" />
@@ -58,6 +62,13 @@ onBeforeUnmount(() => clearTimeout(temporizador))
       <div class="texto">
         Sem internet, salvo no aparelho.
         <template v-if="pendentes">{{ plural(pendentes, 'registro', 'registros') }} para enviar quando a conexão voltar.</template>
+      </div>
+    </div>
+    <div v-else-if="falha" class="faixa faixa-offline">
+      <Icone nome="alerta" :tamanho="18" />
+      <div class="texto">
+        {{ falha }}
+        <NuxtLink v-if="sessaoExpirou" to="/entrar" class="link-acao">Entrar</NuxtLink>
       </div>
     </div>
     <div v-else-if="pendentes" class="faixa faixa-enviando">
@@ -75,6 +86,9 @@ onBeforeUnmount(() => clearTimeout(temporizador))
 <style scoped>
 .faixa { display: flex; align-items: center; gap: 10px; padding: 10px var(--lateral); font-size: 13px; font-weight: 500; line-height: 1.3; }
 .texto { flex: 1; }
+.motivos { margin: 4px 0; padding-left: 18px; }
+.dica { opacity: .85; }
+.link-acao { margin-left: 6px; font-weight: 700; color: inherit; text-decoration: underline; }
 .faixa-offline { background: var(--ambar-suave); color: var(--ambar-texto); }
 .faixa-enviando { background: var(--neutro-suave); color: var(--texto-2); }
 .faixa-ok { background: var(--primaria-suave); color: var(--primaria); }

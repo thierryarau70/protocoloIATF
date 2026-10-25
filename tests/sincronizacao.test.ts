@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { tabelas, useDb } from '../server/utils/db'
 import { aplicarOperacoes, montarSnapshot } from '../server/utils/sincronizacao'
+import { hojeNoBrasil, validarCampos } from '../shared/esquemas'
 
 let vet: string
 let outroVet: string
@@ -127,12 +128,38 @@ describe('sincronização', () => {
     expect((await aplicarOperacoes(vet, [op('insumo', item)]))[0]!.ok).toBe(true)
     // Outro veterinário não altera o item de quem não é dele
     const alheio = await aplicarOperacoes(outroVet, [op('insumo', { ...item, saldo: 0 })])
-    expect(alheio[0]).toMatchObject({ ok: false, erro: 'Item de estoque não encontrado.' })
+    expect(alheio[0]).toMatchObject({ ok: false, erro: 'Item de estoque Benzoato: não encontrado nesta conta.' })
     expect((await montarSnapshot(vet)).insumos).toEqual([item])
     expect((await montarSnapshot(outroVet)).insumos).toEqual([])
 
     const s = (await montarSnapshot(vet)).semens[0]!
     expect((await aplicarOperacoes(vet, [op('semen', { ...s, estoqueDoses: 30, estoqueEm: '2026-10-01', estoqueMinimo: 5 })]))[0]!.ok).toBe(true)
     expect((await montarSnapshot(vet)).semens.find(x => x.id === s.id)).toMatchObject({ estoqueDoses: 30, estoqueEm: '2026-10-01', estoqueMinimo: 5 })
+  })
+})
+
+describe('recusas com motivo', () => {
+  const ontem = () => { const d = new Date(`${hojeNoBrasil()}T00:00:00Z`); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10) }
+
+  it('vaca nascida hoje é recusada dizendo qual vaca e por quê', async () => {
+    const r = await aplicarOperacoes(vet, [op('animal', { id: randomUUID(), loteId: ids.lote, numero: '0901', nascimento: hojeNoBrasil() })])
+    expect(r[0]).toMatchObject({ ok: false, erro: 'Vaca 0901: A data de nascimento precisa ser anterior a hoje.' })
+  })
+
+  it('vaca nascida ontem é aceita', async () => {
+    const r = await aplicarOperacoes(vet, [op('animal', { id: randomUUID(), loteId: ids.lote, numero: '0902', nascimento: ontem() })])
+    expect(r[0]!.ok).toBe(true)
+  })
+
+  it('campos com problema têm mensagem própria', () => {
+    const erros = validarCampos('animal', {
+      id: randomUUID(), loteId: ids.lote, numero: '', peso: 0, numPrenhezes: 1, numPartos: 3, previsaoParto: '2099-01-01',
+    })
+    expect(erros).toMatchObject({
+      numero: 'Informe o número da vaca.',
+      peso: 'O peso precisa ser maior que zero.',
+      previsaoParto: 'A previsão de parto está a mais de 10 meses daqui: confira a data.',
+    })
+    expect(validarCampos('lote', { id: randomUUID(), propriedadeId: ids.propriedade, nome: ' ' })).toEqual({ nome: 'Informe o nome do lote.' })
   })
 })

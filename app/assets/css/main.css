@@ -170,6 +170,8 @@ select.entrada {
 
 .vazio { text-align: center; padding: 32px 16px; color: var(--texto-suave); display: flex; flex-direction: column; gap: 12px; align-items: center; }
 .erro { color: var(--vermelho); font-size: 14px; font-weight: 500; }
+.lista-erros { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.entrada[aria-invalid="true"] { border-color: var(--vermelho); }
 
 /* Movimento */
 /* Troca de tela: a nova sobe um pouco enquanto aparece */

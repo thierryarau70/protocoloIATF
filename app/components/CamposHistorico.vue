@@ -9,6 +9,7 @@ export interface FormHistorico {
 }
 
 const historico = defineModel<FormHistorico>({ required: true })
+defineProps<{ erros?: Record<string, string> }>()
 const id = useId()
 
 const contagens = [
@@ -26,7 +27,8 @@ const contagens = [
     <div class="grade">
       <div v-for="c in contagens" :key="c.chave" class="campo">
         <label :for="`${id}-${c.chave}`">{{ c.rotulo }}</label>
-        <input :id="`${id}-${c.chave}`" v-model="historico[c.chave]" class="entrada" type="number" min="0" step="1" inputmode="numeric">
+        <input :id="`${id}-${c.chave}`" v-model="historico[c.chave]" class="entrada" type="number" min="0" step="1" inputmode="numeric" :aria-invalid="!!erros?.[c.chave]">
+        <p v-if="erros?.[c.chave]" class="erro">{{ erros[c.chave] }}</p>
       </div>
     </div>
     <div class="campo">

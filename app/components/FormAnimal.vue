@@ -2,6 +2,7 @@
 const props = defineProps<{ id?: string, loteId?: string, atendimentoId?: string, numero?: string }>()
 
 import type { FormHistorico } from './CamposHistorico.vue'
+import { hojeNoBrasil, somarDiasData, validarCampos } from '#shared/esquemas'
 
 const { animal, lote, passagens } = useAnimal(() => props.id ?? '')
 const loteAtual = computed(() => animal.value?.loteId ?? props.loteId ?? '')
@@ -10,6 +11,10 @@ const historico = ref<FormHistorico>({ numPrenhezes: '', numAbortos: '', numPerd
 // No cadastro rápido durante o DG o histórico fica para depois
 const mostrarHistorico = computed(() => !!props.id || !props.atendimentoId)
 const erro = ref('')
+/** Erro de cada campo, mostrado embaixo dele */
+const erros = ref<Record<string, string>>({})
+// O calendário não oferece hoje nem datas futuras para o nascimento
+const ontem = computed(() => somarDiasData(hojeNoBrasil(), -1))
 watch(() => animal.value?.id, () => {
   const a = animal.value
   if (a) {
@@ -35,7 +40,7 @@ async function salvar() {
   }
   const peso = form.peso ? Number(form.peso.replace(',', '.')) : null
   const h = historico.value
-  await salvarAnimal({
+  const dados = {
     id: props.id,
     loteId: loteAtual.value,
     numero: form.numero,
@@ -50,7 +55,20 @@ async function salvar() {
     numPartos: inteiroOuNulo(h.numPartos),
     diasVazia: inteiroOuNulo(h.diasVazia),
     motivoDescarte: h.motivoDescarte,
-  })
+  }
+  // Mesmas regras do servidor: o erro aparece aqui, no campo, e não depois como falha de sincronização
+  erros.value = validarCampos('animal', { ...dados, id: dados.id ?? novoId() })
+  if (form.peso && !Number.isFinite(peso)) erros.value.peso = 'Peso: use só números (ex.: 450 ou 450,5).'
+  if (Object.keys(erros.value).length) {
+    erro.value = 'Confira os campos marcados.'
+    // Leva a pessoa ao primeiro campo com problema (o botão de salvar fica no rodapé)
+    await nextTick()
+    const campo = document.querySelector<HTMLElement>('#form-animal [aria-invalid="true"]')
+    campo?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    campo?.focus({ preventScroll: true })
+    return
+  }
+  await salvarAnimal(dados)
   await concluirPara(destino.value)
 }
 </script>
@@ -61,35 +79,41 @@ async function salvar() {
     :sobrelinha="lote?.nome"
     :voltar="{ to: destino, rotulo: atendimentoId ? 'DG' : 'Lote' }"
   >
-    <form id="form-animal" class="pilha" @submit.prevent="salvar">
+    <form id="form-animal" class="pilha" novalidate @submit.prevent="salvar">
       <div class="campo">
         <label for="numero">Número</label>
-        <input id="numero" v-model="form.numero" class="entrada" inputmode="numeric" autocomplete="off" required>
+        <input id="numero" v-model="form.numero" class="entrada" inputmode="numeric" autocomplete="off" required :aria-invalid="!!erros.numero">
+        <p v-if="erros.numero" class="erro">{{ erros.numero }}</p>
       </div>
       <div class="linha-campos">
         <div class="campo">
           <label for="nascimento">Nascimento</label>
-          <input id="nascimento" v-model="form.nascimento" class="entrada" type="date">
+          <input id="nascimento" v-model="form.nascimento" class="entrada" type="date" :max="ontem" :aria-invalid="!!erros.nascimento">
         </div>
         <div class="campo">
           <label for="peso">Peso (kg)</label>
-          <input id="peso" v-model="form.peso" class="entrada" inputmode="decimal">
+          <input id="peso" v-model="form.peso" class="entrada" inputmode="decimal" :aria-invalid="!!erros.peso">
         </div>
       </div>
+      <p v-if="erros.nascimento" class="erro">{{ erros.nascimento }}</p>
+      <p v-if="erros.peso" class="erro">{{ erros.peso }}</p>
       <CampoEscolhaBusca v-model="form.raca" rotulo="Raça" :opcoes="racasBovinas" placeholder="Buscar raça" sem-resultado="Nenhuma raça encontrada" />
       <fieldset class="cartao-suave prenha">
         <legend class="sr-only">Se a vaca estiver prenha</legend>
         <div class="titulo-bloco" aria-hidden="true">Se a vaca estiver prenha</div>
         <div class="campo">
           <label for="parto">Previsão de parto</label>
-          <input id="parto" v-model="form.previsaoParto" class="entrada" type="date">
+          <input id="parto" v-model="form.previsaoParto" class="entrada" type="date" :aria-invalid="!!erros.previsaoParto">
+          <p v-if="erros.previsaoParto" class="erro">{{ erros.previsaoParto }}</p>
         </div>
         <div class="campo">
           <label for="touro">Touro da prenhez</label>
-          <input id="touro" v-model="form.touroPrenhez" class="entrada" autocomplete="off">
+          <input id="touro" v-model="form.touroPrenhez" class="entrada" autocomplete="off" :aria-invalid="!!erros.touroPrenhez">
+          <p v-if="erros.touroPrenhez" class="erro">{{ erros.touroPrenhez }}</p>
         </div>
       </fieldset>
-      <CamposHistorico v-if="mostrarHistorico" v-model="historico" />
+      <CamposHistorico v-if="mostrarHistorico" v-model="historico" :erros="erros" />
+      <p v-if="erros.raca" class="erro">{{ erros.raca }}</p>
       <p v-if="erro" class="erro" role="alert">{{ erro }}</p>
     </form>
     <ResumoVaca v-if="id && passagens.length" :passagens="passagens" class="passagens" />
