@@ -11,7 +11,7 @@
     "typecheck": "nuxt typecheck",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "node server/database/migrar.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.11",
