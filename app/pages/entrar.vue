@@ -41,10 +41,12 @@ async function enviar() {
     <template #rodape>
       <NuxtLink v-if="emailAtivo" to="/esqueci" class="esqueci">Esqueci a senha</NuxtLink>
       <NuxtLink to="/cadastro" class="btn btn-bloco">Criar conta de veterinário</NuxtLink>
+      <NuxtLink to="/conheca" class="conhecer">Ainda não assina? Conheça o plano de R$ 79,99/mês</NuxtLink>
     </template>
   </TelaAcesso>
 </template>
 
 <style scoped>
+.conhecer { align-self: center; min-height: 44px; display: inline-flex; align-items: center; text-align: center; max-width: 280px; font-size: 14px; color: var(--texto-suave); text-decoration: underline; text-underline-offset: 3px; }
 .esqueci { align-self: center; min-height: 44px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 500; color: var(--primaria); }
 </style>

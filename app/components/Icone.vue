@@ -20,6 +20,10 @@ const caminhos = {
   'ranking': 'M4 20h16M7 20v-6M12 20V5M17 20v-10',
   'estoque': 'M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10',
   'alerta': 'M12 9v4M12 17h.01M10.3 3.9L2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+  'microfone': 'M9 6a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0zM5 11a7 7 0 0 0 14 0M12 18v3',
+  'camera': 'M4 8h3l2-3h6l2 3h3v11H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
+  'documento': 'M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6',
+  'agenda': 'M4 6h16v15H4zM4 10h16M8 3v4M16 3v4',
 }
 
 const d = computed(() => caminhos[props.nome])
