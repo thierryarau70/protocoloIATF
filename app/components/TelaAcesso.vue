@@ -37,6 +37,7 @@ onBeforeUnmount(() => clearInterval(temporizador))
     </aside>
 
     <main class="lado-form">
+      <span class="alca" aria-hidden="true" />
       <form class="formulario" @submit.prevent="$emit('enviar')">
         <div class="marca">
           <img src="/icon.svg" alt="" width="48" height="48" class="marca-icone">
@@ -123,18 +124,49 @@ onBeforeUnmount(() => clearInterval(temporizador))
 @keyframes entrar-baixo { from { opacity: 0; transform: translateY(18px); filter: blur(4px); } }
 @keyframes entrar-cima { from { opacity: 0; transform: translateY(-14px); } }
 
-/* Celular: o painel vira uma faixa no topo e o formulário sobe por cima dela */
-@media (max-width: 860px) {
-  .acesso { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-  .painel { min-height: 0; }
-  .painel-conteudo { padding: calc(env(safe-area-inset-top) + 22px) 22px 64px; gap: 26px; justify-content: flex-start; }
-  .painel-frase { font-size: 34px; }
-  .painel-pontos { display: none; }
-  .lado-form { align-items: flex-start; margin-top: -32px; position: relative; z-index: 1; padding: 0 16px 32px; }
-  .formulario { background: var(--superficie); border-radius: 26px; padding: 24px 20px; box-shadow: 0 -10px 40px -20px rgba(7, 20, 15, .5); animation: subir-cartao .9s cubic-bezier(.16, 1, .3, 1) both; }
-  .marca-icone { display: none; }
+.alca { display: none; }
+
+/* Tablet: ondas na tela inteira, frase grande no alto e o formulário num cartão de vidro no meio */
+@media (min-width: 600px) and (max-width: 1100px) {
+  .acesso { position: relative; display: flex; flex-direction: column; overflow: hidden; }
+  .painel { position: absolute; inset: 0; }
+  .painel::after { background: radial-gradient(90% 60% at 50% 70%, rgba(7, 20, 15, .25), rgba(7, 20, 15, .65)); }
+  .painel-conteudo { height: auto; justify-content: flex-start; align-items: center; text-align: center; gap: 36px; padding: calc(env(safe-area-inset-top) + 40px) 48px 0; }
+  .painel-frase { font-size: clamp(44px, 7vw, 64px); }
+  .painel-pontos { order: 3; }
+  .lado-form { position: relative; z-index: 1; flex: 1; align-items: flex-start; padding: 330px 32px 48px; }
+  .formulario {
+    max-width: 480px; padding: 40px 40px 32px; border-radius: 32px;
+    background: rgba(255, 255, 255, .9); border: 1px solid rgba(255, 255, 255, .6);
+    backdrop-filter: blur(22px) saturate(1.5); -webkit-backdrop-filter: blur(22px) saturate(1.5);
+    box-shadow: 0 40px 80px -30px rgba(0, 0, 0, .6), 0 0 0 1px rgba(7, 20, 15, .04);
+    animation: cartao-flutua 1s cubic-bezier(.16, 1, .3, 1) .15s both;
+  }
+  .titulo-acesso { font-size: 38px; }
 }
-@keyframes subir-cartao { from { transform: translateY(60px); opacity: 0; } }
+@keyframes cartao-flutua { from { opacity: 0; transform: translateY(70px) scale(.94); filter: blur(8px); } }
+
+/* Celular: como um app. Topo verde e o formulário sobe de baixo como uma folha, com a alça */
+@media (max-width: 599px) {
+  .acesso { display: flex; flex-direction: column; background: #07140F; }
+  .painel { flex: none; min-height: 36svh; }
+  .painel-conteudo { height: 100%; min-height: 36svh; justify-content: space-between; gap: 20px; padding: calc(env(safe-area-inset-top) + 20px) 22px 52px; }
+  .painel-frase { font-size: 36px; }
+  .painel-pre { font-size: 20px; letter-spacing: -.01em; margin-bottom: 4px; }
+  .painel-pontos { display: none; }
+  .lado-form {
+    position: relative; z-index: 1; flex: 1; flex-direction: column; justify-content: flex-start; align-items: stretch;
+    margin-top: -28px; padding: 12px 20px calc(env(safe-area-inset-bottom) + 28px);
+    background: var(--superficie); border-radius: 28px 28px 0 0; box-shadow: 0 -18px 40px -16px rgba(0, 0, 0, .55);
+    animation: folha-sobe .9s cubic-bezier(.16, 1, .3, 1) .1s both;
+  }
+  .alca { display: block; align-self: center; width: 44px; height: 5px; border-radius: 3px; background: var(--borda); margin-bottom: 18px; }
+  .formulario { max-width: none; gap: 16px; }
+  .marca-icone { display: none; }
+  .titulo-acesso { font-size: 30px; }
+  .botao-acesso { min-height: 54px; border-radius: 16px; font-size: 17px; }
+}
+@keyframes folha-sobe { from { transform: translateY(100%); } }
 @media (prefers-reduced-motion: reduce) {
   .acesso *, .acesso *::before, .acesso *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 }
