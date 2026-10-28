@@ -47,8 +47,19 @@ export function useAuth() {
     async redefinir(token: string, senha: string) {
       await guardar(await api<Usuario>('/api/auth/redefinir', { method: 'POST', body: { token, senha } }))
     },
+    /**
+     * Sair apaga os dados do aparelho. Recusa enquanto houver registros na fila (seriam perdidos) e
+     * sem conseguir encerrar a sessão no servidor (sem internet ela continuaria aberta).
+     */
     async sair() {
-      await api('/api/auth/logout', { method: 'POST' }).catch(() => {})
+      const recusar = (message: string) => Object.assign(new Error(message), { data: { message } })
+      if (await bancoLocal.fila.count()) throw recusar('Há registros ainda não enviados. Envie antes de sair da conta.')
+      try {
+        await api('/api/auth/logout', { method: 'POST' })
+      }
+      catch {
+        throw recusar('Para sair da conta é preciso internet.')
+      }
       await guardar(null)
     },
     atualizarNome(nome: string) {

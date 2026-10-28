@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { perfil, erro, carregar, salvar } = usePerfil()
 const { sair } = useAuth()
-const { online, pendentes } = useSincronizacao()
+const { online, pendentes, sincronizando, sincronizar } = useSincronizacao()
 
 const form = reactive({ nome: '', crmv: '', empresa: '', local: '', logoUrl: '', contato: '' })
 const mensagem = ref('')
@@ -33,13 +33,25 @@ async function enviar() {
   }
 }
 
+// Sair apaga os dados do aparelho: com registros na fila eles se perderiam, e sem internet a sessão
+// continua aberta no servidor. Nos dois casos o botão fica travado e explica o que fazer.
+const motivoSemSaida = computed(() => {
+  if (pendentes.value) {
+    return `${plural(pendentes.value, 'registro ainda não foi enviado', 'registros ainda não foram enviados')}. Sair agora apagaria ${pendentes.value === 1 ? 'esse registro' : 'esses registros'} deste aparelho.`
+  }
+  if (!online.value) return 'Para sair da conta é preciso internet.'
+  return ''
+})
+
 async function confirmarSaida() {
-  const aviso = pendentes.value
-    ? `Há ${plural(pendentes.value, 'registro', 'registros')} ainda não enviados. Se sair agora, eles serão perdidos. Sair mesmo assim?`
-    : 'Sair da conta neste aparelho?'
-  if (!confirm(aviso)) return
-  await sair()
-  await navigateTo('/entrar')
+  if (motivoSemSaida.value || !confirm('Sair da conta neste aparelho?')) return
+  try {
+    await sair()
+    await navigateTo('/entrar')
+  }
+  catch (e) {
+    mensagem.value = mensagemDeErro(e, 'Não foi possível sair.')
+  }
 }
 
 const graficoSemen = computed(() => itensGraficoSemen(perfil.value?.resumo.semen ?? []))
@@ -103,7 +115,19 @@ const graficoAnos = computed(() => (perfil.value?.resumo.iatfPorAno ?? []).map(a
         <p v-if="!online" class="dica">Editar o perfil precisa de internet.</p>
         <p v-if="mensagem" class="dica" role="status">{{ mensagem }}</p>
         <button type="submit" class="btn btn-primario btn-bloco" :disabled="!online || salvando">Salvar perfil</button>
-        <button type="button" class="btn btn-perigo btn-bloco" @click="confirmarSaida">
+        <div v-if="motivoSemSaida" class="sem-saida" role="status">
+          <Icone nome="alerta" :tamanho="18" />
+          <div>
+            {{ motivoSemSaida }}
+            <template v-if="pendentes && online">Envie primeiro e depois saia.</template>
+            <template v-else-if="pendentes">Conecte à internet para enviar e depois saia.</template>
+          </div>
+        </div>
+        <button v-if="pendentes && online" type="button" class="btn btn-contorno btn-bloco" :disabled="sincronizando" @click="sincronizar">
+          <Icone nome="nuvem" />
+          {{ sincronizando ? 'Enviando…' : 'Enviar agora' }}
+        </button>
+        <button type="button" class="btn btn-perigo btn-bloco" :disabled="!!motivoSemSaida" @click="confirmarSaida">
           <Icone nome="sair" />
           Sair da conta
         </button>
@@ -117,6 +141,7 @@ const graficoAnos = computed(() => (perfil.value?.resumo.iatfPorAno ?? []).map(a
 .estatisticas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .estatisticas .cartao { padding: 6px; }
 .logo { max-width: 160px; max-height: 80px; object-fit: contain; }
+.sem-saida { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: var(--raio); background: var(--ambar-suave); color: var(--ambar-texto); font-size: 14px; line-height: 1.4; }
 
 @media (min-width: 1024px) {
   .colunas { display: grid; grid-template-columns: 2fr 3fr; align-items: start; }

@@ -28,8 +28,9 @@ sozinho ao servidor quando a conexão volta.
 5. **Se algo for recusado** (ex.: vaca com nascimento hoje), aparece a faixa vermelha
    *"Não foi salvo: Vaca 202: …"*. É só corrigir e salvar de novo.
 
-**Não fazer sem internet:** sair da conta (os dados que ainda não foram enviados são apagados do
-aparelho ao sair) nem entrar com outra conta no mesmo celular.
+**Sair da conta** só é possível com internet e com tudo enviado. Enquanto houver registros na
+fila, o botão "Sair da conta" (Perfil) fica travado e explica o motivo; com internet, aparece
+"Enviar agora". Isso existe porque sair apaga os dados do aparelho.
 
 ---
 
@@ -49,6 +50,7 @@ aparelho ao sair) nem entrar com outra conta no mesmo celular.
 |---|---|
 | Primeiro acesso / entrar na conta | O login é conferido no servidor. |
 | Cadastro, "Esqueci a senha" | Mesma razão. |
+| Sair da conta | Encerra a sessão no servidor; também exige a fila vazia. |
 | Ditado por voz (na maioria dos celulares) | O reconhecimento de voz do navegador usa o servidor do Google/Apple. Sem internet o app avisa *"O ditado precisa de internet neste aparelho."* |
 | Leitor de brinco na primeira vez | Baixa o leitor (Tesseract) da internet; depois fica guardado por 1 ano. |
 | Taxas e resultados atualizados | Taxa de inseminação, taxa de prenhez e ranking de touros são calculados no servidor; os números novos aparecem depois que sincroniza. |
@@ -108,8 +110,11 @@ aparelho ao sair) nem entrar com outra conta no mesmo celular.
 
 1. **Dois aparelhos editando a mesma vaca offline:** vale o último que sincronizar (o registro é
    enviado completo). Não há mesclagem campo a campo.
-2. **Sair da conta sem internet apaga a fila.** Os registros ainda não enviados se perdem. Hoje o
-   app não bloqueia nem avisa isso. *Sugestão: impedir "Sair" enquanto houver itens na fila.*
+2. **Sair da conta é bloqueado** enquanto houver itens na fila ou sem internet
+   ([app/pages/perfil.vue](../app/pages/perfil.vue) e `sair()` em
+   [app/composables/useAuth.ts](../app/composables/useAuth.ts)), porque sair apaga os dados do
+   aparelho. Fechar o navegador ou limpar os dados do site pelo sistema continua fora do controle
+   do app.
 3. **Registro recusado volta ao que está no servidor.** Ao baixar os dados, o aparelho fica igual
    ao servidor; uma vaca nova recusada some da lista (o aviso vermelho diz qual e por quê).
 4. **Taxas só depois de sincronizar.** Resultado do atendimento, painel da fazenda e ranking de
