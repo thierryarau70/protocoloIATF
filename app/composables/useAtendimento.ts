@@ -42,7 +42,13 @@ export function useAtendimento(id: () => string) {
       idadeGestacional: null, destinoDescarte: null, motivoRefugo: null, hormonioDia: null,
       inseminada: null, justificativaNaoInseminada: null, semenId: null, obs: null, resultadoD45: null,
     }
-    return useSincronizacao().registrar('atendimentoAnimal', existente ? { ...campos, id: base.id } : { ...base, ...campos })
+    const salva = await useSincronizacao().registrar('atendimentoAnimal', existente ? { ...campos, id: base.id } : { ...base, ...campos })
+    // Prenha com idade gestacional: a previsão de parto sai sozinha (data do DG + o que falta da gestação)
+    if (campos.idadeGestacional !== undefined && atendimento.value) {
+      const previsao = previsaoPartoPeloDg(atendimento.value.dataD0, campos.idadeGestacional)
+      if (previsao) await atualizarAnimal(vaca.animal.id, { previsaoParto: previsao })
+    }
+    return salva
   }
 
   return {

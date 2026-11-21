@@ -21,6 +21,9 @@ function lerCurral() {
   catch { return false }
 }
 
+// Na lista, só a vaca em que se está mexendo fica com os campos abertos
+const vacaAberta = ref<string>()
+
 // Cadastro rápido no modo curral: abre a janela sem sair do DG e depois vai para a vaca nova
 const modalVaca = ref<{ abrir: (numero?: string) => void }>()
 const vacaNova = ref<string>()
@@ -80,7 +83,8 @@ const novaVaca = computed(() => `/animais/nova?lote=${atendimento.value?.loteId}
 
         <div class="lista">
           <LinhaDg
-            v-for="v in filtradas" :key="v.animal.id" :vaca="v"
+            v-for="v in filtradas" :key="v.animal.id" :vaca="v" :aberta="vacaAberta === v.animal.id"
+            @abrir="vacaAberta = v.animal.id"
             @linha="atualizarVaca(v, $event)"
             @animal="atualizarAnimal(v.animal.id, $event)"
           />
