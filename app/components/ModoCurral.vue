@@ -7,8 +7,12 @@
 import type { AtendimentoAnimal, SituacaoDg } from '#shared/types/entidades'
 import type { VacaNoAtendimento } from '~/composables/useAtendimento'
 
-const props = defineProps<{ vacas: VacaNoAtendimento[] }>()
-const emit = defineEmits<{ linha: [vaca: VacaNoAtendimento, campos: Partial<AtendimentoAnimal>] }>()
+const props = defineProps<{ vacas: VacaNoAtendimento[], focarId?: string }>()
+const emit = defineEmits<{
+  linha: [vaca: VacaNoAtendimento, campos: Partial<AtendimentoAnimal>]
+  /** Pede o cadastro rápido de uma vaca (com o número procurado, se a busca não achou) */
+  novaVaca: [numero: string]
+}>()
 
 const situacaoDe = (v: VacaNoAtendimento): SituacaoDg => v.linha?.situacaoDg ?? 'pendente'
 const atualId = ref<string>()
@@ -24,6 +28,17 @@ watch(() => props.vacas.length, () => {
 }, { immediate: true })
 
 const aviso = ref('')
+// Número procurado (busca ou voz) que não está no lote: oferece cadastrar
+const naoAchado = ref('')
+
+// Vaca recém-cadastrada: vai direto para ela quando aparecer na lista
+watch(() => [props.focarId, props.vacas.length] as const, ([id]) => {
+  if (id && props.vacas.some(v => v.animal.id === id)) {
+    irPara(props.vacas.find(v => v.animal.id === id))
+    naoAchado.value = ''
+    aviso.value = ''
+  }
+})
 let temporizador: ReturnType<typeof setTimeout> | undefined
 onBeforeUnmount(() => clearTimeout(temporizador))
 
@@ -67,6 +82,7 @@ const busca = ref('')
 function buscar() {
   const achado = acharNumero(busca.value.trim(), numeros.value)
   aviso.value = achado ? '' : `A vaca ${busca.value} não está neste lote.`
+  naoAchado.value = achado ? '' : busca.value.trim()
   irPara(props.vacas.find(v => v.animal.numero === achado))
   busca.value = ''
 }
@@ -85,6 +101,7 @@ const fala = useFala((texto) => {
     const achado = acharNumero(c.numero, numeros.value)
     if (!achado) {
       aviso.value = `Ouvi a vaca ${c.numero}, mas ela não está neste lote.`
+      naoAchado.value = c.numero
       return
     }
     vaca = props.vacas.find(v => v.animal.numero === achado)
@@ -107,6 +124,9 @@ const tons: Record<Exclude<SituacaoDg, 'pendente'>, string> = { prenha: 'verde',
         <label for="curral-ir" class="sr-only">Ir para a vaca número</label>
         <input id="curral-ir" v-model="busca" class="entrada" inputmode="numeric" placeholder="Nº da vaca" autocomplete="off">
         <button type="submit" class="btn btn-contorno" :disabled="!busca">Ir</button>
+        <button type="button" class="btn btn-primario mais-vaca" aria-label="Cadastrar vaca" @click="emit('novaVaca', '')">
+          <Icone nome="mais" :tamanho="20" /> Vaca
+        </button>
       </form>
     </div>
 
@@ -151,6 +171,9 @@ const tons: Record<Exclude<SituacaoDg, 'pendente'>, string> = { prenha: 'verde',
     </section>
 
     <p v-if="aviso" class="aviso" role="status" aria-live="polite">{{ aviso }}</p>
+    <button v-if="naoAchado" type="button" class="btn btn-primario btn-bloco cadastrar-achado" @click="emit('novaVaca', naoAchado)">
+      <Icone nome="mais" :tamanho="20" /> Cadastrar vaca {{ naoAchado }}
+    </button>
 
     <div class="ferramentas">
       <div v-if="fala.suportado" class="microfone">
@@ -174,6 +197,8 @@ const tons: Record<Exclude<SituacaoDg, 'pendente'>, string> = { prenha: 'verde',
 .progresso { font-size: 16px; font-weight: 700; }
 .ir { display: flex; gap: 6px; }
 .ir .entrada { width: 140px; }
+.mais-vaca { gap: 4px; padding: 0 14px; }
+.cadastrar-achado { min-height: 56px; font-size: 17px; animation: surgir var(--medio) var(--curva); }
 .vaca { display: flex; flex-direction: column; gap: 16px; border-width: 2px; }
 .cabeca { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .seta { width: 56px; height: 56px; border-radius: 50%; border: 2px solid var(--borda); background: var(--superficie); color: var(--texto); display: flex; align-items: center; justify-content: center; }

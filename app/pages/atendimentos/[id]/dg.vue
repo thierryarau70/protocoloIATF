@@ -21,6 +21,10 @@ function lerCurral() {
   catch { return false }
 }
 
+// Cadastro rápido no modo curral: abre a janela sem sair do DG e depois vai para a vaca nova
+const modalVaca = ref<{ abrir: (numero?: string) => void }>()
+const vacaNova = ref<string>()
+
 const novaVaca = computed(() => `/animais/nova?lote=${atendimento.value?.loteId}&atendimento=${id()}${busca.value ? `&numero=${encodeURIComponent(busca.value)}` : ''}`)
 </script>
 
@@ -62,7 +66,14 @@ const novaVaca = computed(() => `/animais/nova?lote=${atendimento.value?.loteId}
           {{ modoCurral ? 'Sair do modo curral (ver a lista)' : 'Modo curral: uma vaca por vez, voz e foto' }}
         </button>
 
-        <ModoCurral v-if="modoCurral && vacas.length" :vacas="vacas" @linha="(v, campos) => atualizarVaca(v, campos)" />
+        <ModoCurral
+          v-if="modoCurral && vacas.length" :vacas="vacas" :focar-id="vacaNova"
+          @linha="(v, campos) => atualizarVaca(v, campos)" @nova-vaca="modalVaca?.abrir($event)"
+        />
+        <div v-else-if="modoCurral && !carregando" class="vazio">
+          Nenhuma vaca neste lote ainda.
+          <button type="button" class="btn btn-primario" @click="modalVaca?.abrir()">Cadastrar a primeira vaca</button>
+        </div>
 
         <template v-if="!modoCurral">
         <CampoBusca v-model="busca" rotulo="Buscar vaca pelo número" numerico />
@@ -87,7 +98,8 @@ const novaVaca = computed(() => `/animais/nova?lote=${atendimento.value?.loteId}
 
       <template #rodape>
         <div class="acoes">
-          <NuxtLink :to="novaVaca" class="btn btn-contorno">+ Vaca</NuxtLink>
+          <button v-if="modoCurral" type="button" class="btn btn-contorno" @click="modalVaca?.abrir()">+ Vaca</button>
+          <NuxtLink v-else :to="novaVaca" class="btn btn-contorno">+ Vaca</NuxtLink>
           <NuxtLink v-if="soDg" :to="`/atendimentos/${atendimento.id}/tabela-dg`" class="btn btn-primario">Ver tabela do DG</NuxtLink>
           <NuxtLink v-else-if="contagem.vazia" :to="`/atendimentos/${atendimento.id}/protocolo`" class="btn btn-primario">
             Iniciar IATF · {{ plural(contagem.vazia, 'apta', 'aptas') }}
@@ -96,6 +108,7 @@ const novaVaca = computed(() => `/animais/nova?lote=${atendimento.value?.loteId}
         </div>
       </template>
     </AppTela>
+    <ModalNovaVaca v-if="atendimento" ref="modalVaca" :lote-id="atendimento.loteId" @criada="vacaNova = $event.id" />
   </div>
 </template>
 
