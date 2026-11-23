@@ -91,7 +91,13 @@ export const atendimento = pgTable('atendimento', {
   dataD8: date('data_d8').notNull(),
   dataD10: date('data_d10').notNull(),
   dataD45: date('data_d45').notNull(),
+  // Configuração IATF do lote, preenchida antes da planilha. gnrh = GnRH na inseminação
   gnrh: boolean('gnrh'),
+  vacinaReprodutiva: boolean('vacina_reprodutiva'),
+  diaHormonio: text('dia_hormonio', { enum: ['d7', 'd8', 'd9'] }),
+  // Touro do lote (sugerido em cada vaca inseminada) ou vários touros, escolhidos vaca a vaca na planilha
+  semenId: uuid('semen_id').references(() => semen.id, { onDelete: 'set null' }),
+  variosTouros: boolean('varios_touros'),
   horaD8: time('hora_d8'),
   horaD10: time('hora_d10'),
   inseminador: text('inseminador'),

@@ -1,4 +1,6 @@
-import type { Animal, Atendimento, AtendimentoAnimal, Insumo, Lote, Semen } from '#shared/types/entidades'
+import type { Animal, Atendimento, AtendimentoAnimal, Insumo, Lote, Propriedade, Semen } from '#shared/types/entidades'
+import { somarDiasData } from '#shared/esquemas'
+import { DIAS_GESTACAO } from './gestacao'
 
 /**
  * Indicadores calculados no aparelho a partir do que a sincronização trouxe (funcionam sem internet):
@@ -216,4 +218,72 @@ export function partosPrevistos(animais: Animal[], lotes: Lote[], atendimentos: 
   const meses = new Map<string, PartoPrevisto[]>()
   for (const p of partos.sort((a, b) => a.data.localeCompare(b.data))) meses.set(p.data.slice(0, 7), [...(meses.get(p.data.slice(0, 7)) ?? []), p])
   return [...meses].map(([mes, lista]) => ({ mes, partos: lista }))
+}
+
+// ---------- Relatório de previsão de parto ----------
+
+export type SituacaoParto = 'confirmada' | 'a-confirmar' | 'dg'
+export interface LinhaRelatorioParto {
+  animalId: string
+  numero: string
+  fazenda: string
+  lote: string
+  origem: 'IATF' | 'DG'
+  touro: string
+  /** Data da inseminação (IATF) ou do DG que achou a vaca prenha */
+  dataBase: string
+  previsao: string
+  situacao: SituacaoParto
+}
+
+export const rotuloSituacaoParto: Record<SituacaoParto, string> = {
+  'confirmada': 'Prenha confirmada no D45',
+  'a-confirmar': 'Inseminada · confirmar no D45',
+  'dg': 'Prenha no DG',
+}
+
+/**
+ * Previsão de parto dos lotes já feitos (ou de um só atendimento).
+ * IATF: toda vaca inseminada, depois do D10, com parto no D10 + 283 dias; vazia no D45 sai da lista.
+ * DG: vaca prenha no DG com previsão de parto (calculada pela idade gestacional).
+ * Cada vaca aparece uma vez, pelo atendimento mais recente.
+ */
+export function relatorioPartos(
+  d: { propriedades: Propriedade[], lotes: Lote[], semens: Semen[], animais: Animal[], atendimentos: Atendimento[], linhas: AtendimentoAnimal[] },
+  filtro: { atendimentoId?: string, propriedadeId?: string },
+  hoje: string,
+): LinhaRelatorioParto[] {
+  const loteDe = new Map(d.lotes.map(l => [l.id, l]))
+  const fazendaDe = new Map(d.propriedades.map(p => [p.id, p.nome]))
+  const animalDe = new Map(d.animais.map(a => [a.id, a]))
+  const semenDe = new Map(d.semens.map(s => [s.id, s.nome]))
+  const atendimentos = d.atendimentos.filter((a) => {
+    if (filtro.atendimentoId) return a.id === filtro.atendimentoId
+    return !filtro.propriedadeId || loteDe.get(a.loteId)?.propriedadeId === filtro.propriedadeId
+  })
+  const atendimentoDe = new Map(atendimentos.map(a => [a.id, a]))
+  const porVaca = new Map<string, { linha: LinhaRelatorioParto, d0: string }>()
+  for (const l of d.linhas) {
+    const a = atendimentoDe.get(l.atendimentoId)
+    const vaca = animalDe.get(l.animalId)
+    const lote = a && loteDe.get(a.loteId)
+    if (!a || !vaca || !lote) continue
+    const base = { animalId: vaca.id, numero: vaca.numero, fazenda: fazendaDe.get(lote.propriedadeId) ?? '', lote: lote.nome }
+    let linha: LinhaRelatorioParto | undefined
+    const d10 = a.dataD10 ?? somarDiasData(a.dataD0, 10)
+    if (l.inseminada === true && l.resultadoD45 !== 'vazia' && hoje >= d10) {
+      linha = {
+        ...base, origem: 'IATF', touro: (l.semenId && semenDe.get(l.semenId)) || (a.semenId && semenDe.get(a.semenId)) || '',
+        dataBase: d10, previsao: a.previsaoParto ?? somarDiasData(d10, DIAS_GESTACAO),
+        situacao: l.resultadoD45 === 'prenha' ? 'confirmada' : 'a-confirmar',
+      }
+    }
+    else if (l.situacaoDg === 'prenha' && vaca.previsaoParto) {
+      linha = { ...base, origem: 'DG', touro: vaca.touroPrenhez ?? '', dataBase: a.dataD0, previsao: vaca.previsaoParto, situacao: 'dg' }
+    }
+    const atual = porVaca.get(vaca.id)
+    if (linha && (!atual || a.dataD0 > atual.d0)) porVaca.set(vaca.id, { linha, d0: a.dataD0 })
+  }
+  return [...porVaca.values()].map(v => v.linha)
+    .sort((x, y) => x.previsao.localeCompare(y.previsao) || x.numero.localeCompare(y.numero, 'pt-BR', { numeric: true }))
 }

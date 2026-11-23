@@ -80,6 +80,11 @@ async function salvarAtendimento(db: Db, vetId: string, dados: unknown) {
   const [existente] = await db.select({ loteId: atendimento.loteId }).from(atendimento).where(eq(atendimento.id, at.id))
   await exigirDono(db, vetId, existente?.loteId)
   await lotePermitido(db, vetId, at.loteId)
+  if (at.semenId) {
+    const [doLote] = await db.select({ propriedadeId: lote.propriedadeId }).from(lote).where(eq(lote.id, at.loteId))
+    const [s] = await db.select({ propriedadeId: semen.propriedadeId }).from(semen).where(eq(semen.id, at.semenId))
+    if (!s || s.propriedadeId !== doLote?.propriedadeId) throw new ErroOperacao('o touro escolhido não está cadastrado nesta fazenda.')
+  }
   const valores = { ...at, ...calcularDatas(at.dataD0) }
   await db.insert(atendimento).values(valores).onConflictDoUpdate({ target: atendimento.id, set: { ...valores, atualizadoEm: agora } })
 

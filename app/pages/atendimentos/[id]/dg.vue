@@ -24,11 +24,16 @@ function lerCurral() {
 // Na lista, só a vaca em que se está mexendo fica com os campos abertos
 const vacaAberta = ref<string>()
 
-// Cadastro rápido no modo curral: abre a janela sem sair do DG e depois vai para a vaca nova
+// Cadastro rápido (lista e modo curral): abre a janela sem sair do DG e depois vai para a vaca nova
 const modalVaca = ref<{ abrir: (numero?: string) => void }>()
 const vacaNova = ref<string>()
 
-const novaVaca = computed(() => `/animais/nova?lote=${atendimento.value?.loteId}&atendimento=${id()}${busca.value ? `&numero=${encodeURIComponent(busca.value)}` : ''}`)
+/** Vaca cadastrada na janela: no curral vai até ela; na lista, abre a linha dela */
+function vacaCriada(animal: { id: string }) {
+  vacaNova.value = animal.id
+  vacaAberta.value = animal.id
+  busca.value = ''
+}
 </script>
 
 <template>
@@ -91,10 +96,11 @@ const novaVaca = computed(() => `/animais/nova?lote=${atendimento.value?.loteId}
         </div>
         <div v-if="busca && !filtradas.length" class="vazio">
           Nenhuma vaca com o número {{ busca }} neste lote.
-          <NuxtLink :to="novaVaca" class="btn btn-contorno">Cadastrar vaca {{ busca }}</NuxtLink>
+          <button type="button" class="btn btn-primario" @click="modalVaca?.abrir(busca)">Cadastrar vaca {{ busca }}</button>
         </div>
         <div v-else-if="!carregando && !vacas.length" class="vazio">
-          Nenhuma vaca neste lote. Cadastre pelo botão "+ Vaca".
+          Nenhuma vaca neste lote ainda.
+          <button type="button" class="btn btn-primario" @click="modalVaca?.abrir()">Cadastrar a primeira vaca</button>
         </div>
         <div v-else class="suave">Mostrando {{ filtradas.length }} de {{ plural(vacas.length, 'vaca') }}</div>
         </template>
@@ -102,8 +108,7 @@ const novaVaca = computed(() => `/animais/nova?lote=${atendimento.value?.loteId}
 
       <template #rodape>
         <div class="acoes">
-          <button v-if="modoCurral" type="button" class="btn btn-contorno" @click="modalVaca?.abrir()">+ Vaca</button>
-          <NuxtLink v-else :to="novaVaca" class="btn btn-contorno">+ Vaca</NuxtLink>
+          <button type="button" class="btn btn-contorno" @click="modalVaca?.abrir()">+ Vaca</button>
           <NuxtLink v-if="soDg" :to="`/atendimentos/${atendimento.id}/tabela-dg`" class="btn btn-primario">Ver tabela do DG</NuxtLink>
           <NuxtLink v-else-if="contagem.vazia" :to="`/atendimentos/${atendimento.id}/protocolo`" class="btn btn-primario">
             Iniciar IATF · {{ plural(contagem.vazia, 'apta', 'aptas') }}
@@ -112,7 +117,7 @@ const novaVaca = computed(() => `/animais/nova?lote=${atendimento.value?.loteId}
         </div>
       </template>
     </AppTela>
-    <ModalNovaVaca v-if="atendimento" ref="modalVaca" :lote-id="atendimento.loteId" @criada="vacaNova = $event.id" />
+    <ModalNovaVaca v-if="atendimento" ref="modalVaca" :lote-id="atendimento.loteId" @criada="vacaCriada" />
   </div>
 </template>
 

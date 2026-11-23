@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Cadastro rápido de vaca sem sair do DG (modo curral). Abre como folha de baixo no celular e
+ * Cadastro rápido de vaca sem sair do DG (na lista e no modo curral). Abre como folha de baixo no celular e
  * como cartão no meio da tela no tablet e no computador. Mesmas regras do formulário completo.
  */
 import type { Animal } from '#shared/types/entidades'
@@ -88,7 +88,7 @@ defineExpose({ abrir })
       <span class="alca" aria-hidden="true" />
       <header class="cabeca">
         <div>
-          <div class="sobrelinha">Modo curral</div>
+          <div class="sobrelinha">DG · cadastro rápido</div>
           <h2 id="nv-titulo" class="titulo">Nova vaca</h2>
         </div>
         <button type="button" class="fechar" aria-label="Fechar" @click="fechar">

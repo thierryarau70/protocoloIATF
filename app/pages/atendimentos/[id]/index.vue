@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { somarDiasData } from '#shared/esquemas'
+
 const route = useRoute()
 const id = () => String(route.params.id)
 const { atendimento, lote, propriedade, vacas } = useAtendimento(id)
@@ -38,6 +40,24 @@ const graficoSemen = computed(() => (r.value && r.value.prenhasD45 + r.value.vaz
 const { semens } = useSemens(() => propriedade.value?.id)
 const nomeSemen = computed(() => new Map(semens.value.map(s => [s.id, s.nome])))
 const dia = { d7: 'D7', d8: 'D8', d9: 'D9' } as const
+// Dia do hormônio escolhido na configuração do lote (D8 enquanto não configurado)
+const diaHormonio = computed(() => (atendimento.value?.diaHormonio ? dia[atendimento.value.diaHormonio] : 'D8'))
+const dataHormonio = computed(() => {
+  const a = atendimento.value
+  if (!a) return undefined
+  return a.diaHormonio ? somarDiasData(a.dataD0, { d7: 7, d8: 8, d9: 9 }[a.diaHormonio]) : a.dataD8
+})
+// Depois da inseminação já dá para tirar o relatório de previsão de parto do lote
+const depoisDoD10 = computed(() => !!atendimento.value && hoje() >= (atendimento.value.dataD10 ?? somarDiasData(atendimento.value.dataD0, 10)))
+// Antes do D10 o destaque fica na retirada do implante; depois, na inseminação
+const passo = computed(() => (atendimento.value?.dataD10 && hoje() >= atendimento.value.dataD10 ? 'd10' : 'd8'))
+// Sem a configuração do lote confirmada, a planilha passa antes por ela
+const linkPlanilha = computed(() => {
+  const a = atendimento.value
+  if (!a) return ''
+  const configurado = a.vacinaReprodutiva !== null && a.diaHormonio !== null && a.gnrh !== null && (!!a.semenId || !!a.variosTouros)
+  return `/atendimentos/${a.id}/${configurado ? 'planilha' : 'configuracao'}`
+})
 const data = (d?: string) => (d ? formatarData(d) : 'ao sincronizar')
 const { baixarPlanilha } = useRelatorio(id)
 </script>
@@ -69,23 +89,28 @@ const { baixarPlanilha } = useRelatorio(id)
               <div class="suave">Concluído em {{ formatarData(atendimento.dataD0) }}</div>
             </div>
           </div>
-          <div class="cartao etapa" :class="{ 'cartao-destaque': etapa === 'planilha' }">
+          <div class="cartao etapa" :class="{ 'cartao-destaque': etapa === 'planilha' && passo === 'd8' }">
             <div class="etapa-linha">
-              <span class="dia">D8</span>
+              <span class="dia">{{ diaHormonio }}</span>
               <div class="texto">
-                <div class="nome">Retirada do implante + hormônio</div>
-                <div class="suave">{{ data(atendimento.dataD8) }}<template v-if="atendimento.horaD8"> · {{ atendimento.horaD8.slice(0, 5) }}</template><template v-if="atendimento.gnrh !== null"> · GnRH {{ atendimento.gnrh ? 'sim' : 'não' }}</template></div>
+                <div class="nome">{{ diaHormonio }} · Retirada do implante + hormônio</div>
+                <div class="suave">{{ data(dataHormonio) }}<template v-if="atendimento.horaD8"> · {{ atendimento.horaD8.slice(0, 5) }}</template><template v-if="atendimento.vacinaReprodutiva !== null"> · vacina reprodutiva {{ atendimento.vacinaReprodutiva ? 'sim' : 'não' }}</template></div>
               </div>
             </div>
+          </div>
+          <div class="cartao etapa" :class="{ 'cartao-destaque': etapa === 'planilha' && passo === 'd10' }">
             <div class="etapa-linha">
               <span class="dia">D10</span>
               <div class="texto">
-                <div class="nome">Inseminação</div>
-                <div class="suave">{{ data(atendimento.dataD10) }}<template v-if="atendimento.horaD10"> · {{ atendimento.horaD10.slice(0, 5) }}</template></div>
+                <div class="nome">D10 · Inseminação</div>
+                <div class="suave">{{ data(atendimento.dataD10) }}<template v-if="atendimento.horaD10"> · {{ atendimento.horaD10.slice(0, 5) }}</template><template v-if="atendimento.gnrh !== null"> · GnRH {{ atendimento.gnrh ? 'sim' : 'não' }}</template></div>
               </div>
             </div>
-            <NuxtLink :to="`/atendimentos/${atendimento.id}/planilha`" class="btn" :class="etapa === 'planilha' ? 'btn-primario' : 'btn-contorno'">Abrir planilha IATF</NuxtLink>
           </div>
+          <NuxtLink v-if="depoisDoD10" :to="`/partos?atendimento=${atendimento.id}`" class="btn btn-bloco btn-contorno">
+            <Icone nome="documento" /> Previsão de parto · PDF ou Excel
+          </NuxtLink>
+          <NuxtLink :to="linkPlanilha" class="btn btn-bloco" :class="etapa === 'planilha' ? 'btn-primario' : 'btn-contorno'">Abrir planilha IATF</NuxtLink>
           <NuxtLink :to="`/atendimentos/${atendimento.id}/d45`" class="cartao etapa futura" :class="{ 'cartao-destaque': etapa === 'd45' }">
             <div class="etapa-linha">
               <span class="dia dia-neutro">D45</span>

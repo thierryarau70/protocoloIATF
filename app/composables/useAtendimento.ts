@@ -67,7 +67,7 @@ export function useAtendimento(id: () => string) {
 export async function iniciarAtendimento(loteId: string, dataD0: string) {
   const atendimento: Atendimento = {
     id: novoId(), loteId, tipo: 'dg_iatf', status: 'dg', dataD0,
-    gnrh: null, horaD8: null, horaD10: null, inseminador: null, animaisPerdidos: 0,
+    gnrh: null, vacinaReprodutiva: null, diaHormonio: null, semenId: null, variosTouros: null, horaD8: null, horaD10: null, inseminador: null, animaisPerdidos: 0,
   }
   return useSincronizacao().registrar('atendimento', atendimento)
 }

@@ -43,6 +43,20 @@
       "when": 1792900931203,
       "tag": "0005_estoque",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795299410275,
+      "tag": "0006_configuracao_iatf",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795299625300,
+      "tag": "0007_touro_do_lote",
+      "breakpoints": true
     }
   ]
 }

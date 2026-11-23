@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { somarDiasData } from '#shared/esquemas'
+
 // Página limpa para imprimir ou salvar em PDF (no celular: Compartilhar/Imprimir → Salvar PDF)
 definePageMeta({ layout: 'vazio' })
 
 const route = useRoute()
 const id = () => String(route.params.id)
 const { atendimento, lote, propriedade, perfil, soDg, tabela, titulo, taxaPrenhez, baixarPlanilha } = useRelatorio(id)
+const { semens: semensRel } = useSemens(() => propriedade.value?.id)
 const r = computed(() => atendimento.value?.resultado)
 const emitido = formatarData(hoje())
 
@@ -22,8 +25,11 @@ const dados = computed(() => {
   ]
   if (!soDg.value) {
     itens.push(
-      ['D8 · retirada', formatarData(a.dataD8)],
+      ['Vacina reprodutiva', a.vacinaReprodutiva === null ? '—' : a.vacinaReprodutiva ? 'Sim' : 'Não'],
+      [`${a.diaHormonio ? a.diaHormonio.toUpperCase() : 'D8'} · retirada + hormônio`, formatarData(a.diaHormonio ? somarDiasData(a.dataD0, { d7: 7, d8: 8, d9: 9 }[a.diaHormonio]) : a.dataD8)],
       ['D10 · inseminação', formatarData(a.dataD10)],
+      ['GnRH na inseminação', a.gnrh === null ? '—' : a.gnrh ? 'Sim' : 'Não'],
+      ['Touro do lote', a.variosTouros ? 'Vários (ver lista)' : semensRel.value.find(s => s.id === a.semenId)?.nome ?? '—'],
       ['D45 · DG final', formatarData(a.dataD45)],
       ['Inseminador', a.inseminador || '—'],
       ['Animais perdidos', String(a.animaisPerdidos)],

@@ -2,7 +2,8 @@
 import type { AtendimentoAnimal, Semen } from '#shared/types/entidades'
 import type { VacaNoAtendimento } from '~/composables/useAtendimento'
 
-const props = defineProps<{ vaca: VacaNoAtendimento, semens: Semen[], cadastrarSemen: string }>()
+/** `semenPadrao`: touro escolhido na configuração do lote, que entra sozinho ao marcar "Inseminada" */
+const props = defineProps<{ vaca: VacaNoAtendimento, semens: Semen[], cadastrarSemen: string, semenPadrao?: string | null }>()
 const emit = defineEmits<{ linha: [campos: Partial<AtendimentoAnimal>] }>()
 
 const linha = computed(() => props.vaca.linha!)
@@ -15,7 +16,9 @@ const inseminada = computed(() => (naoInseminadaSemJustificativa.value ? false :
 
 function escolherInseminacao(valor: boolean | null) {
   naoInseminadaSemJustificativa.value = valor === false && !linha.value.justificativaNaoInseminada
-  if (!naoInseminadaSemJustificativa.value) emit('linha', { inseminada: valor })
+  if (naoInseminadaSemJustificativa.value) return
+  const semenId = valor === true ? (linha.value.semenId ?? props.semenPadrao ?? null) : undefined
+  emit('linha', semenId ? { inseminada: valor, semenId } : { inseminada: valor })
 }
 function justificar(valor: string) {
   const justificativa = valor.trim()

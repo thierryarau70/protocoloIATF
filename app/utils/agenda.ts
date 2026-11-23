@@ -37,10 +37,13 @@ export function montarAgenda(atendimentos: AtendimentoAgenda[], linhas: Atendime
     if (a.tipo !== 'dg_iatf' || a.status === 'finalizado') continue
     // Sem sincronizar, as datas ainda não vieram do servidor: mesma conta (D0+8, D0+10, D10+45)
     const d10 = a.dataD10 ?? somarDias(a.dataD0, 10)
-    const datas: Record<Etapa, string> = { d8: a.dataD8 ?? somarDias(a.dataD0, 8), d10, d45: a.dataD45 ?? somarDias(d10, 45) }
+    // A retirada do implante segue o dia escolhido na configuração do lote (D7, D8 ou D9)
+    const d8 = a.diaHormonio ? somarDias(a.dataD0, DIA_HORMONIO[a.diaHormonio]) : (a.dataD8 ?? somarDias(a.dataD0, 8))
+    const datas: Record<Etapa, string> = { d8, d10, d45: a.dataD45 ?? somarDias(d10, 45) }
     for (const etapa of ['d8', 'd10', 'd45'] as const) {
-      if (etapa !== 'd45' && feito[etapa].has(a.id)) continue
       const dias = diferencaDias(hoje, datas[etapa])
+      // O dia do hormônio já vem preenchido pela configuração do lote: o D8 só conta como feito a partir do dia dele
+      if (etapa !== 'd45' && feito[etapa].has(a.id) && (etapa !== 'd8' || dias <= 0)) continue
       if (dias > DIAS_ADIANTE) continue
       // D8 e D10 atrasados há mais de uma semana já não são agenda: o lote seguiu sem anotar
       if (etapa !== 'd45' && dias < -DIAS_ADIANTE) continue
@@ -63,6 +66,8 @@ export const nomeEtapa: Record<Etapa, string> = {
 export function linkEtapa(item: Pick<ItemAgenda, 'atendimentoId' | 'etapa'>): string {
   return item.etapa === 'd45' ? `/atendimentos/${item.atendimentoId}/d45` : `/atendimentos/${item.atendimentoId}/planilha`
 }
+
+const DIA_HORMONIO = { d7: 7, d8: 8, d9: 9 } as const
 
 function somarDias(data: string, dias: number): string {
   const d = new Date(`${data}T00:00:00Z`)

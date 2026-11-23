@@ -6,6 +6,10 @@ const { atendimento, lote, propriedade, vacas, atualizar, atualizarVaca } = useA
 const inseminadas = computed(() => vacas.value.filter(v => v.linha?.inseminada === true))
 const prenhas = computed(() => inseminadas.value.filter(v => v.linha?.resultadoD45 === 'prenha').length)
 const vazias = computed(() => inseminadas.value.filter(v => v.linha?.resultadoD45 === 'vazia').length)
+// No DG final a vaca é achada pelo número do brinco
+const busca = ref('')
+const filtradas = computed(() => inseminadas.value.filter(v => contem(v.animal.numero, busca.value)))
+const faltam = computed(() => inseminadas.value.filter(v => !v.linha?.resultadoD45).length)
 const opcoes = [{ valor: 'prenha' as const, rotulo: 'Prenha' }, { valor: 'vazia' as const, rotulo: 'Vazia', tom: 'ambar' as const }]
 
 async function finalizar() {
@@ -30,8 +34,9 @@ async function finalizar() {
           <Estatistica :valor="vazias" rotulo="Vazias" tom="ambar" />
         </div>
         <p class="dica">Inseminadas no D10: confirme quem emprenhou. Animais perdidos: {{ atendimento.animaisPerdidos }}. A taxa é calculada pelo servidor ao sincronizar.</p>
+        <CampoBusca v-if="inseminadas.length" v-model="busca" rotulo="Buscar vaca pelo número" numerico />
         <div class="lista">
-          <div v-for="v in inseminadas" :key="v.animal.id" class="vaca">
+          <div v-for="v in filtradas" :key="v.animal.id" class="vaca">
             <span class="numero">Vaca {{ v.animal.numero }}</span>
             <GrupoEscolha
               :model-value="v.linha!.resultadoD45" :opcoes="opcoes" :rotulo="`DG final da vaca ${v.animal.numero}`" desmarcavel
@@ -40,6 +45,8 @@ async function finalizar() {
           </div>
         </div>
         <div v-if="!inseminadas.length" class="vazio">Nenhuma vaca inseminada neste protocolo.</div>
+        <div v-else-if="busca && !filtradas.length" class="vazio">Nenhuma vaca inseminada com o número {{ busca }}.</div>
+        <div v-else class="suave">Mostrando {{ filtradas.length }} de {{ plural(inseminadas.length, 'vaca') }} · {{ faltam ? plural(faltam, 'falta confirmar', 'faltam confirmar') : 'todas confirmadas' }}</div>
       </div>
       <template #rodape>
         <button type="button" class="btn btn-primario btn-bloco" @click="finalizar">Finalizar lote</button>

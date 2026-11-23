@@ -10,6 +10,7 @@ const atalhos = [
   { to: '/lotes', titulo: 'Lotes', texto: 'Lotes e vacas, com busca', icone: 'lote' },
   { to: '/touros', titulo: 'Touros', texto: 'Ranking de prenhez por touro', icone: 'ranking' },
   { to: '/estoque', titulo: 'Estoque', texto: 'Hormônios, implantes e sêmen', icone: 'estoque' },
+  { to: '/partos', titulo: 'Previsão de parto', texto: 'Relatório dos lotes feitos, em PDF ou Excel', icone: 'agenda' },
 ] as const
 const estoqueBaixo = useEstoqueBaixo()
 

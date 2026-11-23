@@ -3,17 +3,17 @@ const route = useRoute()
 const id = () => String(route.params.id)
 const { atendimento, lote, propriedade, contagem, atualizar } = useAtendimento(id)
 
-const form = reactive({ gnrh: null as boolean | null, horaD8: '', horaD10: '' })
+const form = reactive({ horaD8: '', horaD10: '' })
 // Preenche uma vez por atendimento; a sincronização em segundo plano não apaga o que está sendo digitado
 watch(() => atendimento.value?.id, () => {
   const a = atendimento.value
-  if (a) Object.assign(form, { gnrh: a.gnrh, horaD8: a.horaD8?.slice(0, 5) ?? '', horaD10: a.horaD10?.slice(0, 5) ?? '' })
+  if (a) Object.assign(form, { horaD8: a.horaD8?.slice(0, 5) ?? '', horaD10: a.horaD10?.slice(0, 5) ?? '' })
 }, { immediate: true })
 
 const dataCalculada = (data?: string) => (data ? formatarData(data) : 'Calculada ao sincronizar')
 
 async function salvar() {
-  await atualizar({ status: 'protocolo', gnrh: form.gnrh, horaD8: form.horaD8 || null, horaD10: form.horaD10 || null })
+  await atualizar({ status: 'protocolo', horaD8: form.horaD8 || null, horaD10: form.horaD10 || null })
   await concluirPara(`/atendimentos/${id()}`)
 }
 </script>
@@ -32,11 +32,7 @@ async function salvar() {
       </template>
 
       <form id="form-protocolo" class="pilha-curta" @submit.prevent="salvar">
-        <fieldset class="cartao gnrh">
-          <legend>Usa GnRH?</legend>
-          <span>GnRH no protocolo</span>
-          <GrupoEscolha v-model="form.gnrh" rotulo="Usa GnRH" :opcoes="[{ valor: true, rotulo: 'Sim' }, { valor: false, rotulo: 'Não', tom: 'neutro' }]" />
-        </fieldset>
+        <p class="dica">Vacina reprodutiva, dia do hormônio e GnRH na inseminação são confirmados ao abrir a planilha IATF.</p>
 
         <div class="cartao etapa cartao-destaque">
           <span class="dia dia-forte">D0</span>
@@ -84,9 +80,6 @@ async function salvar() {
 </template>
 
 <style scoped>
-.gnrh { margin: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
-.gnrh legend { padding: 0 6px; font-size: 13px; font-weight: 500; color: var(--texto-suave); }
-.gnrh > span { font-size: 15px; font-weight: 500; }
 .etapa { display: flex; align-items: center; gap: 12px; padding: 14px 16px; flex-wrap: wrap; }
 .futura { background: var(--superficie-2); border-style: dashed; border-color: #AFBDB2; }
 .dia { width: 48px; height: 48px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--primaria-suave); color: var(--primaria); font-size: 16px; font-weight: 700; }
